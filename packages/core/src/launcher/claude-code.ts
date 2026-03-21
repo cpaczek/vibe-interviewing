@@ -3,6 +3,7 @@ import { execFile } from 'node:child_process'
 import { promisify } from 'node:util'
 import { readFile } from 'node:fs/promises'
 import type { AIToolLauncher, LaunchConfig, LaunchedProcess } from './types.js'
+import { SessionRecorder } from '../session/recorder.js'
 
 const execFileAsync = promisify(execFile)
 
@@ -57,10 +58,15 @@ export class ClaudeCodeLauncher implements AIToolLauncher {
       args.push('--disallowedTools', ...config.disallowedTools)
     }
 
+    // When recording, pipe stdout/stderr through the recorder
+    // instead of using stdio: 'inherit'
+    const useRecording = config.recording === true
+    const recorder = useRecording ? new SessionRecorder() : undefined
+
     // Spawn claude process
     const proc = spawn('claude', args, {
       cwd: workdir,
-      stdio: 'inherit',
+      stdio: useRecording ? ['inherit', 'pipe', 'pipe'] : 'inherit',
       env: {
         ...process.env,
         ...config.env,
@@ -68,6 +74,21 @@ export class ClaudeCodeLauncher implements AIToolLauncher {
         PATH: `${workdir}/.vibe/bin:${process.env['PATH'] ?? ''}`,
       },
     })
+
+    // Forward piped output to the terminal and record it
+    if (useRecording && recorder) {
+      proc.stdout?.on('data', (chunk: Buffer) => {
+        const text = chunk.toString('utf-8')
+        recorder.record('stdout', text)
+        process.stdout.write(chunk)
+      })
+
+      proc.stderr?.on('data', (chunk: Buffer) => {
+        const text = chunk.toString('utf-8')
+        recorder.record('stderr', text)
+        process.stderr.write(chunk)
+      })
+    }
 
     return {
       wait: () =>
@@ -77,6 +98,7 @@ export class ClaudeCodeLauncher implements AIToolLauncher {
       kill: async () => {
         proc.kill('SIGTERM')
       },
+      recorder,
     }
   }
 }

@@ -4,6 +4,7 @@ import { promisify } from 'node:util'
 import { writeFile, readFile } from 'node:fs/promises'
 import { join } from 'node:path'
 import type { AIToolLauncher, LaunchConfig, LaunchedProcess } from './types.js'
+import { SessionRecorder } from '../session/recorder.js'
 
 const execFileAsync = promisify(execFile)
 
@@ -43,16 +44,35 @@ export class OpenCodeLauncher implements AIToolLauncher {
 
     await writeFile(join(workdir, 'AGENTS.md'), agentsMd)
 
+    // When recording, pipe stdout/stderr through the recorder
+    const useRecording = config.recording === true
+    const recorder = useRecording ? new SessionRecorder() : undefined
+
     // Spawn opencode TUI
     const proc = spawn('opencode', [], {
       cwd: workdir,
-      stdio: 'inherit',
+      stdio: useRecording ? ['inherit', 'pipe', 'pipe'] : 'inherit',
       env: {
         ...process.env,
         ...config.env,
         PATH: `${workdir}/.vibe/bin:${process.env['PATH'] ?? ''}`,
       },
     })
+
+    // Forward piped output to the terminal and record it
+    if (useRecording && recorder) {
+      proc.stdout?.on('data', (chunk: Buffer) => {
+        const text = chunk.toString('utf-8')
+        recorder.record('stdout', text)
+        process.stdout.write(chunk)
+      })
+
+      proc.stderr?.on('data', (chunk: Buffer) => {
+        const text = chunk.toString('utf-8')
+        recorder.record('stderr', text)
+        process.stderr.write(chunk)
+      })
+    }
 
     return {
       wait: () =>
@@ -62,6 +82,7 @@ export class OpenCodeLauncher implements AIToolLauncher {
       kill: async () => {
         proc.kill('SIGTERM')
       },
+      recorder,
     }
   }
 }

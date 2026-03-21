@@ -55,6 +55,12 @@ export {
 // Session
 export { SessionManager } from './session/manager.js'
 export {
+  SessionRecorder,
+  type SessionEvent,
+  type SessionEventType,
+  type RecordingData,
+} from './session/recorder.js'
+export {
   saveSession,
   loadSession,
   deleteSession,

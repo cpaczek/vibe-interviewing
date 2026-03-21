@@ -14,6 +14,8 @@ export interface LaunchConfig {
   allowedTools?: string[]
   /** Environment variables to pass */
   env?: Record<string, string>
+  /** Whether to record stdout/stderr during the session */
+  recording?: boolean
 }
 
 /** A running AI tool process */
@@ -22,6 +24,8 @@ export interface LaunchedProcess {
   wait(): Promise<{ exitCode: number }>
   /** Kill the process */
   kill(): Promise<void>
+  /** Session recorder, present when recording is enabled */
+  recorder?: import('../session/recorder.js').SessionRecorder
 }
 
 /** Interface for AI coding tool launchers */

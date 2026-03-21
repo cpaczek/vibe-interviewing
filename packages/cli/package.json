@@ -44,5 +44,14 @@
     "coding-interview",
     "technical-interview"
   ],
-  "license": "MIT"
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/cpaczek/vibe-interviewing.git",
+    "directory": "packages/cli"
+  },
+  "homepage": "https://github.com/cpaczek/vibe-interviewing#readme",
+  "bugs": {
+    "url": "https://github.com/cpaczek/vibe-interviewing/issues"
+  }
 }

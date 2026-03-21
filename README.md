@@ -110,6 +110,37 @@ Use `vibe-interviewing list` to see all available scenarios.
 
 ## Creating Custom Scenarios
 
+### Option 1: Claude Code Skill (Recommended)
+
+If you have [Claude Code](https://docs.anthropic.com/en/docs/claude-code) installed, the `/create-scenario` slash command is automatically available after installing vibe-interviewing:
+
+```bash
+# In your project directory, open Claude Code and run:
+/create-scenario
+```
+
+Claude Code analyzes your codebase and generates everything: scenario config, briefing, solution, evaluation rubric, Dockerfile, and AI behavioral rules. No API key needed — it uses your existing Claude Code auth.
+
+### Option 2: CLI with Anthropic API
+
+```bash
+# Generate a scenario from your codebase
+vibe-interviewing create
+
+# Import a GitHub repo and create a scenario
+vibe-interviewing create --import owner/repo
+
+# Inject a specific bug for a debug scenario
+vibe-interviewing create --inject-bug "race condition in the cache layer"
+
+# Design a feature task
+vibe-interviewing create --inject-feature "add webhook support"
+```
+
+Requires `ANTHROPIC_API_KEY` environment variable.
+
+### Option 3: Manual Setup
+
 Every scenario lives in a `.vibe/` directory:
 
 ```
@@ -139,6 +170,23 @@ vibe-interviewing preview .
 ```
 
 See [docs/creating-scenarios.md](docs/creating-scenarios.md) for a full guide.
+
+## Remote Sessions
+
+Host interviews across networks — no VPN or port forwarding needed:
+
+```bash
+# Interviewer: host with a tunnel (works across networks)
+vibe-interviewing host --scenario ./my-scenario
+
+# Generates a session code like VIBE-7X3K
+# Share it with your candidate
+
+# Candidate: join from anywhere
+vibe-interviewing join VIBE-7X3K
+```
+
+Use `--local-only` to restrict to LAN if you're in the same network.
 
 ## Architecture
 

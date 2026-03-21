@@ -9,6 +9,7 @@ import { registerTestCommand } from '../commands/test.js'
 import { registerCreateCommand } from '../commands/create.js'
 import { registerHostCommand } from '../commands/host.js'
 import { registerJoinCommand } from '../commands/join.js'
+import { registerReplayCommand } from '../commands/replay.js'
 
 export function createProgram(): Command {
   const program = new Command()
@@ -30,6 +31,7 @@ export function createProgram(): Command {
   registerCreateCommand(program)
   registerHostCommand(program)
   registerJoinCommand(program)
+  registerReplayCommand(program)
 
   return program
 }
