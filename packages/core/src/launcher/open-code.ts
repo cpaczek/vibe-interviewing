@@ -1,0 +1,67 @@
+import { spawn } from 'node:child_process'
+import { execFile } from 'node:child_process'
+import { promisify } from 'node:util'
+import { writeFile, readFile } from 'node:fs/promises'
+import { join } from 'node:path'
+import type { AIToolLauncher, LaunchConfig, LaunchedProcess } from './types.js'
+
+const execFileAsync = promisify(execFile)
+
+export class OpenCodeLauncher implements AIToolLauncher {
+  readonly name = 'open-code'
+  readonly displayName = 'Open Code'
+
+  async isInstalled(): Promise<boolean> {
+    try {
+      await execFileAsync('opencode', ['--version'])
+      return true
+    } catch {
+      return false
+    }
+  }
+
+  async getVersion(): Promise<string | null> {
+    try {
+      const { stdout } = await execFileAsync('opencode', ['--version'])
+      return stdout.trim()
+    } catch {
+      return null
+    }
+  }
+
+  async launch(workdir: string, config: LaunchConfig): Promise<LaunchedProcess> {
+    // Write opencode.json config
+    const opencodeConfig = {
+      model: config.model ?? 'anthropic/claude-sonnet-4-6',
+    }
+    await writeFile(join(workdir, 'opencode.json'), JSON.stringify(opencodeConfig, null, 2))
+
+    // Write AGENTS.md — Open Code cannot hide instructions from the candidate,
+    // so we include the system prompt content here as a known tradeoff.
+    const systemPrompt = await readFile(config.systemPromptPath, 'utf-8')
+    const agentsMd = [`# Interview Scenario: ${config.scenarioName}`, '', systemPrompt].join('\n')
+
+    await writeFile(join(workdir, 'AGENTS.md'), agentsMd)
+
+    // Spawn opencode TUI
+    const proc = spawn('opencode', [], {
+      cwd: workdir,
+      stdio: 'inherit',
+      env: {
+        ...process.env,
+        ...config.env,
+        PATH: `${workdir}/.vibe/bin:${process.env['PATH'] ?? ''}`,
+      },
+    })
+
+    return {
+      wait: () =>
+        new Promise((resolve) => {
+          proc.on('exit', (code) => resolve({ exitCode: code ?? 0 }))
+        }),
+      kill: async () => {
+        proc.kill('SIGTERM')
+      },
+    }
+  }
+}

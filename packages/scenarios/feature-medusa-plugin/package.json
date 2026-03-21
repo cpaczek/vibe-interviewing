@@ -1,0 +1,19 @@
+{
+  "name": "wishlist-api",
+  "version": "1.0.0",
+  "description": "Simplified e-commerce API with wishlist feature",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node src/index.js",
+    "dev": "node --watch src/index.js",
+    "test": "node --test src/**/*.test.js"
+  },
+  "dependencies": {
+    "better-sqlite3": "^11.6.0",
+    "express": "^4.21.0",
+    "uuid": "^10.0.0"
+  },
+  "devDependencies": {
+    "supertest": "^7.0.0"
+  }
+}

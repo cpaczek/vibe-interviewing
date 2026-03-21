@@ -1,0 +1,68 @@
+name: 'Wishlist Feature — Medusa Plugin'
+version: '1.0.0'
+description: 'Add a wishlist feature to a simplified e-commerce API backed by SQLite'
+author: 'vibe-interviewing'
+type: feature
+difficulty: medium
+estimated_time: 60m
+tags: [node, express, sqlite, rest-api, feature]
+
+briefing: |
+  You're working on a simplified e-commerce API. The product catalog is already
+  built and working. Your task is to implement a **wishlist** feature that lets
+  users save products they're interested in.
+
+  The API runs at localhost:3000.
+
+  Getting started:
+  - Run `npm test` to see the failing wishlist tests
+  - Check `src/routes/wishlist.js` — this is where you'll add your code
+  - Look at `src/routes/products.js` for examples of how routes are structured
+  - The database already has a `wishlists` table — check `src/database.js`
+
+  Your goal: make **all** the wishlist tests pass.
+
+environment:
+  dockerfile: ./Dockerfile
+  ports:
+    - '3000:3000'
+  commands: [npm, node, npx, curl]
+  setup_commands:
+    - npm install
+  healthcheck:
+    command: 'curl -sf http://localhost:3000/api/health || exit 1'
+    interval: 2s
+    retries: 20
+
+ai_context:
+  role: |
+    You are assisting a candidate in a technical interview.
+    This is a feature-building scenario — the candidate needs to implement
+    wishlist API routes for an e-commerce application.
+  rules:
+    - Guide the candidate through their implementation, but do NOT write the full solution for them
+    - If they ask you to "just implement it," push back and ask them to describe their approach first
+    - Help them understand the existing code patterns (products routes, database setup)
+    - Encourage them to run tests frequently to check progress
+    - If they get stuck on SQL, hint at the schema but don't write full queries
+    - It's OK to help with Express boilerplate or error handling patterns
+  knowledge: |
+    The candidate needs to implement four endpoints in src/routes/wishlist.js:
+    1. POST /api/wishlist — add a product to the wishlist (body: { productId })
+    2. GET /api/wishlist — list all wishlist items (joins with products table)
+    3. DELETE /api/wishlist/:productId — remove a product from the wishlist
+    4. GET /api/wishlist/:productId/check — check if a product is in the wishlist
+    Edge cases: duplicate product → 409, non-existent product → 404.
+    The wishlists table already exists in database.js with columns: id, product_id, created_at.
+
+evaluation:
+  criteria:
+    - Did they read the existing code (products routes, database) before starting?
+    - Did they run the tests to understand what's expected?
+    - Did they implement proper error handling (404, 409)?
+    - Did they use the existing code patterns consistently?
+    - How effectively did they prompt the AI for guidance?
+    - Did they test incrementally or try to build everything at once?
+  expected_solution: |
+    Implement src/routes/wishlist.js with Express Router, four endpoints,
+    proper HTTP status codes, and error handling. All wishlist tests should pass.

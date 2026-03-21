@@ -1,0 +1,6 @@
+dist
+node_modules
+coverage
+.changeset
+pnpm-lock.yaml
+packages/scenarios/*/src

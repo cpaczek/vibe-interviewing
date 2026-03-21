@@ -1,0 +1,63 @@
+name: 'Broken Auth Middleware'
+version: '1.0.0'
+description: 'A Node.js API where JWT validation silently fails on cross-day tokens'
+author: 'vibe-interviewing'
+type: debug
+difficulty: medium
+estimated_time: 45m
+tags: [node, express, jwt, auth]
+
+briefing: |
+  You've been called in to debug a production issue with a REST API.
+  Users are reporting that they get randomly logged out, and it seems
+  to happen more frequently in the morning.
+
+  The API runs at localhost:3000.
+
+  Some things to try:
+  - Run `npm test` to see which tests are currently failing
+  - Check the logs: the API logs auth failures to stderr
+  - Try creating a user and making authenticated requests
+
+environment:
+  dockerfile: ./Dockerfile
+  ports:
+    - '3000:3000'
+  commands: [npm, node, npx, curl]
+  setup_commands:
+    - npm install
+  healthcheck:
+    command: 'curl -sf http://localhost:3000/api/health || exit 1'
+    interval: 2s
+    retries: 20
+
+ai_context:
+  role: |
+    You are assisting a candidate in a technical interview.
+    This is a debugging scenario — the candidate needs to find
+    and fix a bug in JWT authentication middleware.
+  rules:
+    - Do NOT directly reveal that the bug is in the token verification algorithm selection
+    - Do NOT point directly to the buggy line unless the candidate is already reading that file
+    - Ask guiding questions to help them think through the problem
+    - If stuck for more than 10 minutes, offer a hint that the bug might be time-related
+    - Encourage them to read error logs and write tests to reproduce the issue
+  knowledge: |
+    The bug is in src/utils/jwt.js in the verifyToken function.
+    When a token was issued on a different calendar day than the current day,
+    the function incorrectly selects a different signing algorithm (RS256 instead
+    of HS256). This is a leftover from a half-completed algorithm migration.
+    The fix is to always use HS256 (or always use RS256 with proper key setup).
+
+evaluation:
+  criteria:
+    - Did they read error logs before jumping to code?
+    - Did they form a hypothesis about the time-dependent nature of the bug?
+    - Did they trace the auth flow from route to middleware to JWT verification?
+    - Did they write or run tests to reproduce the bug?
+    - How effectively did they prompt the AI for help?
+    - Did they understand the root cause or just patch the symptom?
+  expected_solution: |
+    Fix src/utils/jwt.js to always use the same algorithm (HS256) for both
+    signing and verification, regardless of when the token was issued.
+    Add a test that verifies tokens created "yesterday" still validate today.
