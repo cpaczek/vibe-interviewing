@@ -2,7 +2,7 @@
 
 **AI-era technical interviews — evaluate how engineers work with AI, not what they memorize.**
 
-[![CI](https://github.com/vibe-interviewing/vibe-interviewing/actions/workflows/ci.yml/badge.svg)](https://github.com/vibe-interviewing/vibe-interviewing/actions/workflows/ci.yml)
+[![CI](https://github.com/cpaczek/vibe-interviewing/actions/workflows/ci.yml/badge.svg)](https://github.com/cpaczek/vibe-interviewing/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
 ---
@@ -20,15 +20,50 @@ No whiteboards. No leetcode. Just real work.
 ## Quick Start
 
 ```bash
-# Install globally
+# Install globally (both interviewer and candidate)
 npm install -g vibe-interviewing
-
-# Initialize a scenario in your project
-vibe-interviewing init
-
-# Start an interview session
-vibe-interviewing start
 ```
+
+**Interviewer** — prepare and host a scenario:
+
+```bash
+vibe-interviewing init          # Create a scenario from your codebase
+vibe-interviewing host          # Generate a session code for your candidate
+```
+
+**Candidate** — join with a session code:
+
+```bash
+vibe-interviewing join VIBE-7X3K   # Join the interview session
+```
+
+## Interviewer Perspective
+
+### Browse & select scenarios
+
+<img src="docs/screenshots/interviewer-list.png" alt="vibe-interviewing list — browse available scenarios" width="600">
+
+### Create a scenario from any codebase
+
+<img src="docs/screenshots/init-wizard.png" alt="vibe-interviewing init — interactive scenario wizard" width="600">
+
+### Preview solution & rubric before the interview
+
+<img src="docs/screenshots/interviewer-preview.png" alt="vibe-interviewing preview — solution, AI rules, and evaluation rubric" width="600">
+
+### Host a session — generate a code for your candidate
+
+<img src="docs/screenshots/interviewer-host.png" alt="vibe-interviewing host — generate session code" width="600">
+
+## Candidate Perspective
+
+### Join, read the briefing, and start working
+
+<img src="docs/screenshots/candidate-start.png" alt="vibe-interviewing join — candidate joins with session code" width="600">
+
+The candidate works in Claude Code with the full codebase. Commands like `npm test` and `curl` run transparently inside Docker — they never see the orchestration.
+
+---
 
 ## How It Works
 
@@ -36,20 +71,23 @@ vibe-interviewing start
 Interviewer                          Candidate
     │                                    │
     ├─ vibe-interviewing init            │
-    │  (pick or create a scenario)       │
+    │  (create scenario from codebase)   │
     │                                    │
-    ├─ vibe-interviewing start ──────────┤
-    │  (launches Docker environment)     │
+    ├─ vibe-interviewing host            │
+    │  (generates session code)          │
+    │                                    │
+    │  "Run: join VIBE-7X3K"  ──────────>│
+    │                                    │
+    │                                    ├─ vibe-interviewing join VIBE-7X3K
+    │                                    │  (downloads scenario, starts Docker)
+    │                                    │
     │                                    ├─ Works in Claude Code / Open Code
     │                                    │  (AI rules injected via system prompt)
-    │                                    │  (tools proxied through Docker)
+    │                                    │  (commands proxied through Docker)
     │                                    │
-    ├─ Observes session ─────────────────┤
+    ├─ Observes via screenshare ─────────┤
     │                                    │
-    ├─ vibe-interviewing destroy         │
-    │  (tears down environment)          │
-    │                                    │
-    └─ Evaluates with rubric            │
+    └─ Evaluates with rubric             │
 ```
 
 Key design principles:
