@@ -28,6 +28,12 @@ export {
   discoverSingleScenario,
 } from './scenario/registry.js'
 export { detectProject, type DetectedProject } from './scenario/auto-detect.js'
+export {
+  generateScenario,
+  type GenerateOptions,
+  type GeneratedScenario,
+} from './scenario/generator.js'
+export { importRepo } from './scenario/importer.js'
 
 // Runtime
 export type { Runtime, Session, ExecResult } from './runtime/types.js'
@@ -57,6 +63,9 @@ export {
 } from './session/store.js'
 export { toStoredSession, type StoredSession } from './session/types.js'
 
+// Network
+export { createTunnel, type TunnelInfo } from './network/tunnel.js'
+
 // Errors
 export {
   VibeError,
@@ -66,5 +75,6 @@ export {
   ScenarioValidationError,
   AIToolNotFoundError,
   SessionNotFoundError,
+  ApiKeyMissingError,
   HealthCheckFailedError,
 } from './errors.js'

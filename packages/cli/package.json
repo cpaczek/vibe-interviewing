@@ -7,13 +7,19 @@
     "vibe-interviewing": "./dist/bin/vibe-interviewing.js"
   },
   "main": "./dist/index.js",
+  "files": [
+    "dist/",
+    "commands/",
+    "scripts/"
+  ],
   "scripts": {
     "build": "tsup",
     "dev": "tsup --watch",
     "test": "vitest run",
     "test:watch": "vitest",
     "lint": "eslint src/",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "postinstall": "node ./scripts/postinstall.mjs"
   },
   "dependencies": {
     "@inquirer/prompts": "^7.2.0",

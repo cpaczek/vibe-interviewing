@@ -9,7 +9,8 @@ import { promisify } from 'node:util'
 import { tmpdir } from 'node:os'
 import { networkInterfaces } from 'node:os'
 import { randomBytes } from 'node:crypto'
-import { loadScenarioConfig, discoverAllScenarios } from '@vibe-interviewing/core'
+import { loadScenarioConfig, discoverAllScenarios, createTunnel } from '@vibe-interviewing/core'
+import type { TunnelInfo } from '@vibe-interviewing/core'
 import { selectScenario } from '../ui/prompts.js'
 import { createSpinner } from '../ui/spinner.js'
 import * as log from '../utils/logger.js'
@@ -17,10 +18,10 @@ import * as log from '../utils/logger.js'
 const execFileAsync = promisify(execFile)
 
 /**
- * Encode a host:port pair into a base64url session code for the candidate to use.
+ * Encode a host:port pair or tunnel URL into a base64url session code for the candidate to use.
  */
-function encodeSessionCode(host: string, port: number): string {
-  return Buffer.from(`${host}:${port}`).toString('base64url')
+function encodeSessionCode(value: string): string {
+  return Buffer.from(value).toString('base64url')
 }
 
 /**
@@ -66,7 +67,8 @@ export function registerHostCommand(program: Command): void {
     .command('host')
     .description('Host an interview session for a candidate to join')
     .option('-s, --scenario <path>', 'Path to scenario directory')
-    .action(async (options: { scenario?: string }) => {
+    .option('--local-only', 'Skip tunnel creation and use local network only')
+    .action(async (options: { scenario?: string; localOnly?: boolean }) => {
       try {
         const { showBanner } = await import('../ui/banner.js')
         showBanner()
@@ -153,37 +155,73 @@ export function registerHostCommand(program: Command): void {
         }
 
         const port = address.port
-        const connectionCode = encodeSessionCode(localIP, port)
+        const localConnectionCode = encodeSessionCode(`${localIP}:${port}`)
         const fullCode = `VIBE-${shortCode}`
+
+        // 5. Attempt tunnel creation for remote access
+        let tunnel: TunnelInfo | undefined
+        let tunnelConnectionCode: string | undefined
+
+        if (!options.localOnly) {
+          try {
+            log.info('Creating tunnel for remote access...')
+            tunnel = await createTunnel(port)
+            tunnelConnectionCode = encodeSessionCode(tunnel.url)
+            log.success(`Tunnel established: ${chalk.dim(tunnel.url)}`)
+          } catch (tunnelErr) {
+            log.warn(
+              `Could not create tunnel: ${tunnelErr instanceof Error ? tunnelErr.message : String(tunnelErr)}`,
+            )
+            log.warn('Falling back to local-only mode.')
+          }
+        }
 
         // Cleanup on exit
         const cleanup = (): void => {
           server.close()
+          if (tunnel) {
+            tunnel.close().catch(() => {
+              // Ignore errors during cleanup
+            })
+          }
         }
         process.on('SIGINT', cleanup)
         process.on('SIGTERM', cleanup)
 
-        // 5. Display session info
-        const sessionInfo = boxen(
-          [
-            `${chalk.bold.cyan('SESSION HOSTED')}`,
+        // 6. Display session info
+        const sessionLines = [
+          `${chalk.bold.cyan('SESSION HOSTED')}`,
+          '',
+          `${chalk.bold('Session Code:')}  ${chalk.green.bold(fullCode)}`,
+          '',
+          `${chalk.bold.underline('Local Network')}`,
+          `${chalk.bold('Connection:')}    ${chalk.dim(localConnectionCode)}`,
+          `${chalk.dim('Candidate runs:')}`,
+          `  ${chalk.cyan(`vibe-interviewing join ${localConnectionCode}`)}`,
+        ]
+
+        if (tunnelConnectionCode && tunnel) {
+          sessionLines.push(
             '',
-            `${chalk.bold('Session Code:')}  ${chalk.green.bold(fullCode)}`,
-            `${chalk.bold('Connection:')}    ${chalk.dim(connectionCode)}`,
-            '',
+            `${chalk.bold.underline('Remote (Tunnel)')}`,
+            `${chalk.bold('Connection:')}    ${chalk.dim(tunnelConnectionCode)}`,
             `${chalk.dim('Candidate runs:')}`,
-            `  ${chalk.cyan(`vibe-interviewing join ${connectionCode}`)}`,
-            '',
-            `${chalk.dim(`Scenario: ${config.name}`)}`,
-            `${chalk.dim(`Serving on: ${localIP}:${port}`)}`,
-          ].join('\n'),
-          {
-            padding: 1,
-            margin: { top: 1, bottom: 1, left: 0, right: 0 },
-            borderStyle: 'round',
-            borderColor: 'green',
-          },
+            `  ${chalk.cyan(`vibe-interviewing join ${tunnelConnectionCode}`)}`,
+          )
+        }
+
+        sessionLines.push(
+          '',
+          `${chalk.dim(`Scenario: ${config.name}`)}`,
+          `${chalk.dim(`Serving on: ${localIP}:${port}`)}`,
         )
+
+        const sessionInfo = boxen(sessionLines.join('\n'), {
+          padding: 1,
+          margin: { top: 1, bottom: 1, left: 0, right: 0 },
+          borderStyle: 'round',
+          borderColor: 'green',
+        })
         console.log(sessionInfo)
 
         // 6. Wait for candidate to download

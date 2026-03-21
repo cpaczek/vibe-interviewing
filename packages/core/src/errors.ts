@@ -74,6 +74,16 @@ export class SessionNotFoundError extends VibeError {
   }
 }
 
+export class ApiKeyMissingError extends VibeError {
+  constructor() {
+    super(
+      'ANTHROPIC_API_KEY environment variable is not set',
+      'API_KEY_MISSING',
+      'Get your API key at: https://console.anthropic.com/',
+    )
+  }
+}
+
 export class HealthCheckFailedError extends VibeError {
   constructor(command: string, retries: number) {
     super(

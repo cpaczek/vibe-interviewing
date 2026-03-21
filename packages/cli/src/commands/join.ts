@@ -21,10 +21,18 @@ import * as log from '../utils/logger.js'
 const execFileAsync = promisify(execFile)
 
 /**
- * Decode a base64url session code back into host and port.
+ * Decode a base64url session code into a base URL for the host server.
+ * Supports both tunnel URLs (starting with "http") and host:port format.
  */
-function decodeSessionCode(code: string): { host: string; port: number } {
+function decodeSessionCode(code: string): { baseUrl: string } {
   const decoded = Buffer.from(code, 'base64url').toString()
+
+  // Tunnel URL: decoded value starts with "http"
+  if (decoded.startsWith('http')) {
+    return { baseUrl: decoded }
+  }
+
+  // Legacy host:port format
   const lastColon = decoded.lastIndexOf(':')
   if (lastColon === -1) {
     throw new Error(`Invalid session code: ${code}`)
@@ -35,20 +43,19 @@ function decodeSessionCode(code: string): { host: string; port: number } {
   if (isNaN(port)) {
     throw new Error(`Invalid port in session code: ${portStr}`)
   }
-  return { host, port }
+  return { baseUrl: `http://${host}:${port}` }
 }
 
 /**
  * Download a file from the host server via HTTP.
  */
 async function downloadTarball(
-  host: string,
-  port: number,
+  baseUrl: string,
   shortCode: string,
   destPath: string,
 ): Promise<void> {
   return new Promise((resolve, reject) => {
-    const url = `http://${host}:${port}/download?code=${shortCode}`
+    const url = `${baseUrl}/download?code=${shortCode}`
     get(url, (res) => {
       if (res.statusCode !== 200) {
         reject(new Error(`Download failed with status ${res.statusCode}`))
@@ -84,7 +91,7 @@ export function registerJoinCommand(program: Command): void {
         showBanner()
 
         // 1. Decode session code
-        const { host, port } = decodeSessionCode(code)
+        const { baseUrl } = decodeSessionCode(code)
 
         // 2. Download scenario tarball
         const tempDir = mkdtempSync(join(tmpdir(), 'vibe-join-'))
@@ -100,7 +107,7 @@ export function registerJoinCommand(program: Command): void {
           // so we pass an empty string and the host validates.
           // For MVP, the host accepts the download without code validation
           // when using the connection code directly.
-          await downloadTarball(host, port, '', tarballPath)
+          await downloadTarball(baseUrl, '', tarballPath)
         })
 
         // 3. Extract tarball
