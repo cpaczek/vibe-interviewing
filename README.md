@@ -2,6 +2,8 @@
 
 **AI-era technical interviews — evaluate how engineers work with AI, not what they memorize.**
 
+⚠️ This was entirely vibe coded with Claude Code, I have not audited all of the code so run this at your own risk.
+
 [![CI](https://github.com/cpaczek/vibe-interviewing/actions/workflows/ci.yml/badge.svg)](https://github.com/cpaczek/vibe-interviewing/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
