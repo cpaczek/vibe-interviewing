@@ -23,9 +23,7 @@ jobs:
         with:
           node-version: 20
           cache: pnpm
-
-      - name: Configure npm registry
-        run: npm config set registry https://registry.npmjs.org/
+          registry-url: https://registry.npmjs.org
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
@@ -48,7 +46,8 @@ jobs:
 
           if [ "$LOCAL_VERSION" != "$PUBLISHED_VERSION" ]; then
             echo "Publishing $PACKAGE_NAME@$LOCAL_VERSION (registry has $PUBLISHED_VERSION)"
-            pnpm publish --provenance --access public --no-git-checks
+            TARBALL=$(pnpm pack --pack-gzip-level 9 | tail -1)
+            npm publish "$TARBALL" --provenance --access public
           else
             echo "Skipping $PACKAGE_NAME — version $LOCAL_VERSION already published"
           fi
@@ -62,7 +61,8 @@ jobs:
 
           if [ "$LOCAL_VERSION" != "$PUBLISHED_VERSION" ]; then
             echo "Publishing $PACKAGE_NAME@$LOCAL_VERSION (registry has $PUBLISHED_VERSION)"
-            pnpm publish --provenance --access public --no-git-checks
+            TARBALL=$(pnpm pack --pack-gzip-level 9 | tail -1)
+            npm publish "$TARBALL" --provenance --access public
           else
             echo "Skipping $PACKAGE_NAME — version $LOCAL_VERSION already published"
           fi
@@ -76,7 +76,8 @@ jobs:
 
           if [ "$LOCAL_VERSION" != "$PUBLISHED_VERSION" ]; then
             echo "Publishing $PACKAGE_NAME@$LOCAL_VERSION (registry has $PUBLISHED_VERSION)"
-            pnpm publish --provenance --access public --no-git-checks
+            TARBALL=$(pnpm pack --pack-gzip-level 9 | tail -1)
+            npm publish "$TARBALL" --provenance --access public
           else
             echo "Skipping $PACKAGE_NAME — version $LOCAL_VERSION already published"
           fi
