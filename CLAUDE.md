@@ -29,6 +29,12 @@ This is a pnpm monorepo with turborepo.
 - Tests live next to source files as `*.test.ts`
 - Use `vitest` for testing
 
+## Releasing
+
+Before committing changes that should be published to npm, bump the version in all public packages (`packages/core`, `packages/cli`, `packages/scenarios`). All three must stay in sync. The publish workflow skips packages whose version already exists on npm, so forgetting to bump means the new code won't be published.
+
+Private packages (`packages/web`, `packages/cloudflare`) don't need version bumps.
+
 ## Key architectural decisions
 
 - **Git-clone based scenarios**: Scenarios clone a real open-source repo at a pinned commit, apply find/replace patches to inject bugs, then wipe git history

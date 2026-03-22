@@ -1,6 +1,6 @@
 {
   "name": "vibe-interviewing",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "AI-era technical interviews — evaluate how engineers work with AI, not what they memorize",
   "type": "module",
   "bin": {
