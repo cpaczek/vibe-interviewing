@@ -10,6 +10,8 @@
 
 **[Try the interactive demo →](https://vibe-interviewing.iar.dev)**
 
+![vibe-interviewing demo](docs/screenshots/candidate-local.png)
+
 ---
 
 ## The Problem
@@ -46,8 +48,6 @@ Run everything on one machine — great for self-study or in-person interviews.
 ```bash
 vibe-interviewing start patch-data-loss
 ```
-
-![Local start](docs/screenshots/candidate-local.png)
 
 1. Clones a real open-source repo at a pinned commit
 2. Injects a subtle bug via find/replace patch
