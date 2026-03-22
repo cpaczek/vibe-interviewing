@@ -30,7 +30,7 @@ npm install -g vibe-interviewing
 vibe-interviewing list
 
 # Start an interview session
-vibe-interviewing start rate-limiter-boundary
+vibe-interviewing start patch-data-loss
 ```
 
 > **Prerequisites:** [Node.js 20+](https://nodejs.org/), [Git](https://git-scm.com/), and [Claude Code](https://docs.anthropic.com/en/docs/claude-code) installed globally (`npm install -g @anthropic-ai/claude-code`).
@@ -42,7 +42,7 @@ vibe-interviewing start rate-limiter-boundary
 Run everything on one machine — great for self-study or in-person interviews.
 
 ```bash
-vibe-interviewing start rate-limiter-boundary
+vibe-interviewing start patch-data-loss
 ```
 
 ![Local start](docs/screenshots/candidate-local.png)
@@ -61,7 +61,7 @@ Host an interview and have the candidate join with a session code — works acro
 **Interviewer** runs:
 
 ```bash
-vibe-interviewing host rate-limiter-boundary
+vibe-interviewing host patch-data-loss
 ```
 
 The workspace uploads to the cloud. You get a session code and can close your terminal.
@@ -74,7 +74,7 @@ vibe-interviewing join VIBE-A3X9K2
 
 The candidate downloads the workspace from the cloud, runs setup, and launches Claude Code — all with a single command.
 
-> **LAN mode:** Use `--local` to serve directly on your network instead of the cloud: `vibe-interviewing host --local rate-limiter-boundary`
+> **LAN mode:** Use `--local` to serve directly on your network instead of the cloud: `vibe-interviewing host --local patch-data-loss`
 
 ### Design principles
 
@@ -85,12 +85,11 @@ The candidate downloads the workspace from the cloud, runs setup, and launches C
 
 ## Built-in Scenarios
 
-| Scenario                   | Type     | Difficulty | Time       | Description                                              |
-| -------------------------- | -------- | ---------- | ---------- | -------------------------------------------------------- |
-| `rate-limiter-boundary`    | Debug    | Medium     | ~30-45 min | Rate limiter allows requests beyond the configured limit |
-| `patch-data-loss`          | Debug    | Hard       | ~30-45 min | PATCH requests silently drop fields from records         |
-| `storage-adapter-refactor` | Refactor | Medium     | ~45-60 min | Refactor tightly-coupled storage for pluggable backends  |
-| `webhook-notifications`    | Feature  | Hard       | ~45-60 min | Build a webhook notification system for a REST API       |
+| Scenario                   | Type     | Difficulty | Time       | Description                                             |
+| -------------------------- | -------- | ---------- | ---------- | ------------------------------------------------------- |
+| `patch-data-loss`          | Debug    | Hard       | ~30-45 min | PATCH requests silently drop fields from records        |
+| `storage-adapter-refactor` | Refactor | Medium     | ~45-60 min | Refactor tightly-coupled storage for pluggable backends |
+| `webhook-notifications`    | Feature  | Hard       | ~45-60 min | Build a webhook notification system for a REST API      |
 
 Use `vibe-interviewing list` to see all available scenarios.
 

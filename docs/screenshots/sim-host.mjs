@@ -32,7 +32,7 @@ function box(text, color, pad = 1) {
   return [top, ...padLines, ...content, ...padLines, bot].join('\n')
 }
 
-console.log(`${c.dim}$ vibe-interviewing host rate-limiter-boundary${c.reset}`)
+console.log(`${c.dim}$ vibe-interviewing host patch-data-loss${c.reset}`)
 console.log()
 console.log(
   box(
@@ -42,7 +42,7 @@ console.log(
 )
 console.log()
 console.log(
-  `${c.blue}ℹ${c.reset} Scenario: ${c.bold}rate-limiter-boundary${c.reset} (medium, ~30-45 min)`,
+  `${c.blue}ℹ${c.reset} Scenario: ${c.bold}patch-data-loss${c.reset} (hard, ~30-45 min)`,
 )
 console.log(`${c.green}✔${c.reset} Workspace ready`)
 console.log()

@@ -1,10 +1,4 @@
 scenarios:
-  - name: rate-limiter-boundary
-    description: 'Rate limiter allows requests beyond the configured limit'
-    difficulty: medium
-    estimated_time: '30-45m'
-    repo: 'https://github.com/express-rate-limit/express-rate-limit'
-    commit: '4e8b18bf972eff2890ed67bd11d8a08a2c6502d5'
   - name: patch-data-loss
     description: 'PATCH requests silently drop fields from records'
     difficulty: hard

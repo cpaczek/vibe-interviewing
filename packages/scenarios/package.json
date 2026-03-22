@@ -9,7 +9,9 @@
     "index.js",
     "index.d.ts",
     "registry.yaml",
-    "rate-limiter-boundary/"
+    "patch-data-loss/",
+    "storage-adapter-refactor/",
+    "webhook-notifications/"
   ],
   "scripts": {},
   "license": "MIT",

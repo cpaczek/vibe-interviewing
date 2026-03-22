@@ -10,7 +10,7 @@ npm install -g vibe-interviewing
 vibe-interviewing list
 
 # Host a session for a remote candidate
-vibe-interviewing host rate-limiter-boundary
+vibe-interviewing host patch-data-loss
 ```
 
 ## Choosing a Scenario
@@ -19,7 +19,6 @@ Use `vibe-interviewing list` to see built-in scenarios. Each has a type, difficu
 
 | Scenario                   | Type     | Difficulty | Time       |
 | -------------------------- | -------- | ---------- | ---------- |
-| `rate-limiter-boundary`    | Debug    | Medium     | ~30-45 min |
 | `patch-data-loss`          | Debug    | Hard       | ~30-45 min |
 | `storage-adapter-refactor` | Refactor | Medium     | ~45-60 min |
 | `webhook-notifications`    | Feature  | Hard       | ~45-60 min |

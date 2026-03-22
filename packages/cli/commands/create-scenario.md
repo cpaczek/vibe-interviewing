@@ -7,7 +7,6 @@ You are creating an interview scenario for **vibe-interviewing**, a platform tha
 Ask the interviewer how they want to create this scenario:
 
 1. **Use a built-in scenario as a starting point** — Modify an existing scenario from the registry. Built-in options:
-   - `rate-limiter-boundary` (debug, medium) — Express rate limiter off-by-one
    - `patch-data-loss` (debug, hard) — REST API PATCH silently drops fields
    - `storage-adapter-refactor` (refactor, medium) — Decouple tightly-coupled storage layer
    - `webhook-notifications` (feature, hard) — Build webhook notification system

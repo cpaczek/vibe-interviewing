@@ -43,7 +43,7 @@ console.log(
 console.log()
 console.log(`${c.bold}Available Scenarios:${c.reset}`)
 console.log()
-console.log(`  ${c.cyan}rate-limiter-boundary${c.reset}${c.dim} [built-in]${c.reset}`)
+console.log(`  ${c.cyan}patch-data-loss${c.reset}${c.dim} [built-in]${c.reset}`)
 console.log(`    ${c.dim}medium | ~30-45 min${c.reset}`)
 console.log(`    Rate limiter allows requests beyond the configured limit`)
 console.log()
