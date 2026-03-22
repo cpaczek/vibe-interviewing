@@ -41,12 +41,8 @@ console.log(
   ),
 )
 console.log()
-console.log(
-  `${c.blue}ℹ${c.reset} Scenario: ${c.bold}patch-data-loss${c.reset} (hard, ~30-45 min)`,
-)
-console.log(
-  `${c.blue}ℹ${c.reset} PATCH requests silently drop fields from records`,
-)
+console.log(`${c.blue}ℹ${c.reset} Scenario: ${c.bold}patch-data-loss${c.reset} (hard, ~30-45 min)`)
+console.log(`${c.blue}ℹ${c.reset} PATCH requests silently drop fields from records`)
 console.log()
 console.log(`${c.green}✔${c.reset} Workspace ready`)
 console.log()

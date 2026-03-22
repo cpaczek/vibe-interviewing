@@ -41,20 +41,14 @@ console.log(
   ),
 )
 console.log()
-console.log(
-  `${c.blue}ℹ${c.reset} Scenario: ${c.bold}patch-data-loss${c.reset} (hard, ~30-45 min)`,
-)
+console.log(`${c.blue}ℹ${c.reset} Scenario: ${c.bold}patch-data-loss${c.reset} (hard, ~30-45 min)`)
 console.log(`${c.green}✔${c.reset} Workspace ready`)
 console.log(`${c.green}✔${c.reset} Session uploaded to cloud`)
 console.log()
 console.log(`  ${c.bold}${c.cyan}Session code: VIBE-3R8KW1F0NX${c.reset}`)
 console.log()
-console.log(
-  `${c.blue}ℹ${c.reset} Give this code to the candidate. They run:`,
-)
-console.log(
-  `  ${c.bold}vibe-interviewing join VIBE-3R8KW1F0NX${c.reset}`,
-)
+console.log(`${c.blue}ℹ${c.reset} Give this code to the candidate. They run:`)
+console.log(`  ${c.bold}vibe-interviewing join VIBE-3R8KW1F0NX${c.reset}`)
 console.log()
 console.log(`${c.dim}You can close this terminal. The session is stored in the cloud.${c.reset}`)
 console.log()
