@@ -41,23 +41,31 @@ console.log(
   ),
 )
 console.log()
-console.log(`${c.blue}ℹ${c.reset} Scenario: ${c.bold}patch-data-loss${c.reset} (hard, ~30-45 min)`)
-console.log(`${c.blue}ℹ${c.reset} Rate limiter allows requests beyond the configured limit`)
+console.log(
+  `${c.blue}ℹ${c.reset} Scenario: ${c.bold}patch-data-loss${c.reset} (hard, ~30-45 min)`,
+)
+console.log(
+  `${c.blue}ℹ${c.reset} PATCH requests silently drop fields from records`,
+)
 console.log()
 console.log(`${c.green}✔${c.reset} Workspace ready`)
 console.log()
 
-const briefing = `Hey — we've been getting reports that the rate limiter on our
-API is letting through one extra request per window. It should
-cap at exactly 100 requests per 15-minute window, but users are
-consistently hitting 101.
+const briefing = `We've got a P1 from the support team. Multiple customers are
+reporting data loss in our product catalog API. They say they'll
+update a single field on a product — like changing the price —
+and when they fetch it back, all the other fields are gone.
 
-The rate limiter is built on express-rate-limit. Check out the
-sliding window logic. Run ${c.cyan}npm test${c.reset} to see the failing test.`
+The API is built on json-server. You can start it locally with:
+
+  node --experimental-strip-types src/bin.ts fixtures/db.json
+
+Start by reproducing the issue, then trace through the code to
+find the root cause.`
 
 console.log(
   box(
-    `${c.bold}RATE-LIMITER-BOUNDARY${c.reset}\n${c.dim}medium | ~30-45 min${c.reset}\n\n${briefing}\n\n${c.dim}Briefing saved to BRIEFING.md in your workspace.${c.reset}`,
+    `${c.bold}PATCH-DATA-LOSS${c.reset}\n${c.dim}hard | ~30-45 min${c.reset}\n\n${briefing}\n\n${c.dim}Briefing saved to BRIEFING.md in your workspace.${c.reset}`,
     'yellow',
   ),
 )

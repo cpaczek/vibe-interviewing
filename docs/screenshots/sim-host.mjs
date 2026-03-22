@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Simulates the host command — interviewer hosting a session
+// Simulates the host command — interviewer hosting a remote session
 const c = {
   reset: '\x1b[0m',
   bold: '\x1b[1m',
@@ -41,16 +41,20 @@ console.log(
   ),
 )
 console.log()
-console.log(`${c.blue}ℹ${c.reset} Scenario: ${c.bold}patch-data-loss${c.reset} (hard, ~30-45 min)`)
+console.log(
+  `${c.blue}ℹ${c.reset} Scenario: ${c.bold}patch-data-loss${c.reset} (hard, ~30-45 min)`,
+)
 console.log(`${c.green}✔${c.reset} Workspace ready`)
-console.log()
-console.log(`${c.blue}ℹ${c.reset} Serving on ${c.dim}192.168.1.42:54321${c.reset}`)
+console.log(`${c.green}✔${c.reset} Session uploaded to cloud`)
 console.log()
 console.log(`  ${c.bold}${c.cyan}Session code: VIBE-3R8KW1F0NX${c.reset}`)
 console.log()
 console.log(
-  `${c.blue}ℹ${c.reset} Give this code to the candidate. They run: ${c.bold}vibe-interviewing join VIBE-3R8KW1F0NX${c.reset}`,
+  `${c.blue}ℹ${c.reset} Give this code to the candidate. They run:`,
+)
+console.log(
+  `  ${c.bold}vibe-interviewing join VIBE-3R8KW1F0NX${c.reset}`,
 )
 console.log()
-console.log(`${c.dim}Waiting for candidate to connect... (Ctrl+C to stop)${c.reset}`)
+console.log(`${c.dim}You can close this terminal. The session is stored in the cloud.${c.reset}`)
 console.log()

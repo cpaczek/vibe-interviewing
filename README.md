@@ -8,6 +8,8 @@
 [![npm](https://img.shields.io/npm/v/vibe-interviewing)](https://www.npmjs.com/package/vibe-interviewing)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
+**[Try the interactive demo →](https://vibe-interviewing.iar.dev)**
+
 ---
 
 ## The Problem
@@ -190,12 +192,13 @@ vibe-interviewing sessions clean       Remove completed sessions (--dry-run to p
 
 pnpm monorepo powered by [Turborepo](https://turbo.build/repo):
 
-| Package                                      | Description                                                         |
-| -------------------------------------------- | ------------------------------------------------------------------- |
-| [`packages/core`](packages/core)             | Scenario engine, git-based session management, Claude Code launcher |
-| [`packages/cli`](packages/cli)               | CLI entry point (commander-based), commands, UI                     |
-| [`packages/scenarios`](packages/scenarios)   | Built-in scenario configs and registry                              |
-| [`packages/cloudflare`](packages/cloudflare) | Cloudflare Worker for cloud-hosted session relay                    |
+| Package                                      | Description                                                                                        |
+| -------------------------------------------- | -------------------------------------------------------------------------------------------------- |
+| [`packages/core`](packages/core)             | Scenario engine, git-based session management, Claude Code launcher                                |
+| [`packages/cli`](packages/cli)               | CLI entry point (commander-based), commands, UI                                                    |
+| [`packages/scenarios`](packages/scenarios)   | Built-in scenario configs and registry                                                             |
+| [`packages/cloudflare`](packages/cloudflare) | Cloudflare Worker for cloud-hosted session relay                                                   |
+| [`packages/web`](packages/web)               | Landing page and interactive demo ([vibe-interviewing.iar.dev](https://vibe-interviewing.iar.dev)) |
 
 **Key technologies:** TypeScript, Zod, simple-git, Commander.
 
