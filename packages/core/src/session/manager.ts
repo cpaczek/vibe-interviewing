@@ -36,6 +36,7 @@ export class SessionManager {
     config: ScenarioConfig,
     workdir?: string,
     onProgress?: ProgressCallback,
+    options?: { skipSetup?: boolean },
   ): Promise<{ session: Session; config: ScenarioConfig }> {
     const id = randomBytes(4).toString('hex')
     const sessionDir = workdir ?? join(homedir(), 'vibe-sessions', `${config.name}-${id}`)
@@ -89,14 +90,16 @@ export class SessionManager {
     await writeFile(systemPromptPath, generateSystemPrompt(config))
     session.systemPromptPath = systemPromptPath
 
-    // 6. Run setup commands
-    session.status = 'setting-up'
-    for (const cmd of config.setup) {
-      onProgress?.(`Running: ${cmd}`)
-      try {
-        execSync(cmd, { cwd: sessionDir, stdio: 'pipe', timeout: 300000 })
-      } catch (err) {
-        throw new SetupError(cmd, err instanceof Error ? err.message : String(err))
+    // 6. Run setup commands (skip when hosting — candidate runs setup after download)
+    if (!options?.skipSetup) {
+      session.status = 'setting-up'
+      for (const cmd of config.setup) {
+        onProgress?.(`Running: ${cmd}`)
+        try {
+          execSync(cmd, { cwd: sessionDir, stdio: 'pipe', timeout: 300000 })
+        } catch (err) {
+          throw new SetupError(cmd, err instanceof Error ? err.message : String(err))
+        }
       }
     }
 

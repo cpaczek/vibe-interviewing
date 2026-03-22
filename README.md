@@ -37,15 +37,46 @@ vibe-interviewing start rate-limiter-boundary
 
 ## How It Works
 
-1. You run `vibe-interviewing start <scenario>`
-2. The tool clones a real open-source repo at a pinned commit
-3. Injects a subtle bug via find/replace patch
-4. Wipes git history (no cheating with `git diff`)
-5. Shows the candidate a briefing (reads like a Slack message from their team lead)
-6. Launches Claude Code with hidden AI behavioral rules injected via system prompt
-7. Candidate debugs. Timer runs. You evaluate.
+### Local mode (single machine)
 
-**Design principles:**
+Run everything on one machine — great for self-study or in-person interviews.
+
+```bash
+vibe-interviewing start rate-limiter-boundary
+```
+
+![Local start](docs/screenshots/candidate-local.png)
+
+1. Clones a real open-source repo at a pinned commit
+2. Injects a subtle bug via find/replace patch
+3. Wipes git history (no cheating with `git diff`)
+4. Shows the candidate a briefing
+5. Launches Claude Code with hidden AI behavioral rules
+6. Candidate debugs. Timer runs. You evaluate.
+
+### Remote mode (two machines)
+
+Host an interview on your network and have the candidate join with a session code — perfect for remote interviews.
+
+**Interviewer** runs:
+
+```bash
+vibe-interviewing host rate-limiter-boundary
+```
+
+![Host session](docs/screenshots/interviewer-host.png)
+
+**Candidate** runs:
+
+```bash
+vibe-interviewing join VIBE-3R8KW1F0NX
+```
+
+![Join session](docs/screenshots/candidate-start.png)
+
+The host prepares the workspace and serves it over HTTP on your local network. The candidate downloads the workspace, runs setup, and launches Claude Code — all with a single command.
+
+### Design principles
 
 - **Real codebases** — candidates work in actual open-source projects, not toy examples
 - **Workspace isolation** — the candidate never sees the scenario config, solution, or AI behavioral rules
@@ -57,6 +88,8 @@ vibe-interviewing start rate-limiter-boundary
 | Scenario                | Difficulty | Time       | Description                                                                      |
 | ----------------------- | ---------- | ---------- | -------------------------------------------------------------------------------- |
 | `rate-limiter-boundary` | Medium     | ~30-45 min | Off-by-one in express-rate-limit's sliding window lets one extra request through |
+
+![List scenarios](docs/screenshots/interviewer-list.png)
 
 Use `vibe-interviewing list` to see all available scenarios.
 
@@ -125,13 +158,28 @@ vibe-interviewing validate path/to/scenario.yaml
 ## CLI Reference
 
 ```
-vibe-interviewing start [scenario]     Start an interview session
+vibe-interviewing start [scenario]     Start a local interview session
   -s, --scenario-file <path>           Use a local scenario.yaml
+  -w, --workdir <path>                 Custom workspace directory
+  -t, --tool <name>                    AI tool to use (default: claude-code)
+  -m, --model <model>                  Model override for Claude Code
+  --no-web                             Disable web search/fetch tools
+
+vibe-interviewing host [scenario]      Host a session for a remote candidate
+  -s, --scenario-file <path>           Use a local scenario.yaml
+  -p, --port <port>                    Port to serve on (default: random)
+
+vibe-interviewing join <code>          Join a hosted session using a session code
+  -w, --workdir <path>                 Custom workspace directory
+  -t, --tool <name>                    AI tool to use (default: claude-code)
   -m, --model <model>                  Model override for Claude Code
   --no-web                             Disable web search/fetch tools
 
 vibe-interviewing list                 List available scenarios
 vibe-interviewing validate <path>      Validate a scenario.yaml file
+
+vibe-interviewing sessions list        List sessions (--all to include completed)
+vibe-interviewing sessions clean       Remove completed sessions (--dry-run to preview)
 ```
 
 ## Architecture

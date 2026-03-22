@@ -42,6 +42,13 @@ export {
 } from './session/store.js'
 export { toStoredSession, type StoredSession } from './session/types.js'
 
+// Network
+export {
+  encodeSessionCode,
+  decodeSessionCode,
+  InvalidSessionCodeError,
+} from './network/session-code.js'
+
 // Errors
 export {
   VibeError,

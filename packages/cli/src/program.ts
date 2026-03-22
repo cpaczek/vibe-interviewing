@@ -3,6 +3,8 @@ import { readFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import { dirname, join } from 'node:path'
 import { registerStartCommand } from './commands/start.js'
+import { registerHostCommand } from './commands/host.js'
+import { registerJoinCommand } from './commands/join.js'
 import { registerListCommand } from './commands/list.js'
 import { registerValidateCommand } from './commands/validate.js'
 import { registerSessionsCommand } from './commands/sessions.js'
@@ -30,6 +32,8 @@ export function createProgram(): Command {
     .version(getVersion())
 
   registerStartCommand(program)
+  registerHostCommand(program)
+  registerJoinCommand(program)
   registerListCommand(program)
   registerValidateCommand(program)
   registerSessionsCommand(program)

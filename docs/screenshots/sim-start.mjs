@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Simulates the candidate perspective: join → briefing → launch
+// Simulates the start command — local interview session
 const c = {
   reset: '\x1b[0m',
   bold: '\x1b[1m',
@@ -32,9 +32,8 @@ function box(text, color, pad = 1) {
   return [top, ...padLines, ...content, ...padLines, bot].join('\n')
 }
 
-console.log(`${c.dim}$ vibe-interviewing join VIBE-3R8KW1F0NX${c.reset}`)
+console.log(`${c.dim}$ vibe-interviewing start rate-limiter-boundary${c.reset}`)
 console.log()
-
 console.log(
   box(
     `${c.bold}vibe-interviewing${c.reset}\n${c.dim}AI-era technical interviews${c.reset}`,
@@ -42,9 +41,12 @@ console.log(
   ),
 )
 console.log()
-console.log(`${c.blue}ℹ${c.reset} Connecting to ${c.dim}192.168.1.42:54321${c.reset}...`)
-console.log(`${c.green}✔${c.reset} Session downloaded`)
-console.log(`${c.green}✔${c.reset} Setup complete`)
+console.log(
+  `${c.blue}ℹ${c.reset} Scenario: ${c.bold}rate-limiter-boundary${c.reset} (medium, ~30-45 min)`,
+)
+console.log(`${c.blue}ℹ${c.reset} Off-by-one in express-rate-limit's sliding window`)
+console.log()
+console.log(`${c.green}✔${c.reset} Workspace ready`)
 console.log()
 
 const briefing = `Hey — we've been getting reports that the rate limiter on our

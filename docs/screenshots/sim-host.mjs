@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Simulates the host command — interviewer generating a session code
+// Simulates the host command — interviewer hosting a session
 const c = {
   reset: '\x1b[0m',
   bold: '\x1b[1m',
@@ -32,7 +32,7 @@ function box(text, color, pad = 1) {
   return [top, ...padLines, ...content, ...padLines, bot].join('\n')
 }
 
-console.log(`${c.dim}$ vibe-interviewing host --scenario debug-node-auth${c.reset}`)
+console.log(`${c.dim}$ vibe-interviewing host rate-limiter-boundary${c.reset}`)
 console.log()
 console.log(
   box(
@@ -42,19 +42,17 @@ console.log(
 )
 console.log()
 console.log(
-  `${c.blue}ℹ${c.reset} Scenario: ${c.bold}Node Auth Middleware — JWT Bug${c.reset} (debug, medium, ~45m)`,
+  `${c.blue}ℹ${c.reset} Scenario: ${c.bold}rate-limiter-boundary${c.reset} (medium, ~30-45 min)`,
 )
-console.log(`${c.green}✔${c.reset} Scenario packaged`)
-console.log(`${c.green}✔${c.reset} Session server started`)
+console.log(`${c.green}✔${c.reset} Workspace ready`)
 console.log()
-
+console.log(`${c.blue}ℹ${c.reset} Serving on ${c.dim}192.168.1.42:54321${c.reset}`)
+console.log()
+console.log(`  ${c.bold}${c.cyan}Session code: VIBE-3R8KW1F0NX${c.reset}`)
+console.log()
 console.log(
-  box(
-    `${c.bold}Session Ready${c.reset}\n\nHave your candidate run:\n\n  ${c.cyan}${c.bold}vibe-interviewing join VIBE-7X3K${c.reset}\n\nSession is active on your local network.`,
-    'green',
-  ),
+  `${c.blue}ℹ${c.reset} Give this code to the candidate. They run: ${c.bold}vibe-interviewing join VIBE-3R8KW1F0NX${c.reset}`,
 )
-
 console.log()
-console.log(`${c.dim}Waiting for candidate to connect...${c.reset}`)
+console.log(`${c.dim}Waiting for candidate to connect... (Ctrl+C to stop)${c.reset}`)
 console.log()
