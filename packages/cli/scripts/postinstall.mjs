@@ -33,12 +33,8 @@ async function installClaudeCodeSkills() {
 
     if (mdFiles.length > 0) {
       const skills = mdFiles.map((f) => `/${f.replace('.md', '')}`).join(', ')
-      console.log(
-        `\n  ✔ Claude Code skills installed: ${skills}`,
-      )
-      console.log(
-        '    Use these slash commands in Claude Code to create interview scenarios.\n',
-      )
+      console.log(`\n  ✔ Claude Code skills installed: ${skills}`)
+      console.log('    Use these slash commands in Claude Code to create interview scenarios.\n')
     }
   } catch {
     // Silently skip if Claude Code isn't set up — not a hard requirement
