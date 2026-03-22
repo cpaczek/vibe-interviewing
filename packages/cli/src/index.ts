@@ -1,1 +1,1 @@
-export { createProgram } from './bin/vibe-interviewing.js'
+export { createProgram } from './program.js'

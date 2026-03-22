@@ -30,23 +30,23 @@ describe('validator', () => {
   }
 
   describe('validateScenario', () => {
-    it('passes validation for a valid scenario', async () => {
+    it('passes validation for a valid scenario', () => {
       const config = makeConfig()
-      const result = await validateScenario(config)
+      const result = validateScenario(config)
 
       expect(result.valid).toBe(true)
       expect(result.errors).toHaveLength(0)
     })
 
-    it('fails when briefing is empty', async () => {
+    it('fails when briefing is empty', () => {
       const config = makeConfig({ briefing: '  ' })
-      const result = await validateScenario(config)
+      const result = validateScenario(config)
 
       expect(result.valid).toBe(false)
       expect(result.errors).toContain('Briefing cannot be empty')
     })
 
-    it('fails when ai_rules.role is empty', async () => {
+    it('fails when ai_rules.role is empty', () => {
       const config = makeConfig({
         ai_rules: {
           role: '  ',
@@ -54,21 +54,43 @@ describe('validator', () => {
           knowledge: 'knowledge',
         },
       })
-      const result = await validateScenario(config)
+      const result = validateScenario(config)
 
       expect(result.valid).toBe(false)
       expect(result.errors.some((e) => e.includes('ai_rules.role'))).toBe(true)
     })
 
-    it('fails when repo is empty', async () => {
+    it('fails when repo is empty', () => {
       const config = makeConfig({ repo: '  ' })
-      const result = await validateScenario(config)
+      const result = validateScenario(config)
 
       expect(result.valid).toBe(false)
       expect(result.errors.some((e) => e.includes('repo'))).toBe(true)
     })
 
-    it('warns when rules are empty', async () => {
+    it('fails when commit is not a valid SHA', () => {
+      const config = makeConfig({ commit: 'main' })
+      const result = validateScenario(config)
+
+      expect(result.valid).toBe(false)
+      expect(result.errors.some((e) => e.includes('hex SHA'))).toBe(true)
+    })
+
+    it('accepts a valid short SHA', () => {
+      const config = makeConfig({ commit: 'abc1234' })
+      const result = validateScenario(config)
+
+      expect(result.valid).toBe(true)
+    })
+
+    it('accepts a valid full SHA', () => {
+      const config = makeConfig({ commit: '4e8b18bf972eff2890ed67bd11d8a08a2c6502d5' })
+      const result = validateScenario(config)
+
+      expect(result.valid).toBe(true)
+    })
+
+    it('warns when rules are empty', () => {
       const config = makeConfig({
         ai_rules: {
           role: 'A role',
@@ -76,36 +98,36 @@ describe('validator', () => {
           knowledge: 'knowledge',
         },
       })
-      const result = await validateScenario(config)
+      const result = validateScenario(config)
 
       expect(result.warnings.some((w) => w.includes('rules'))).toBe(true)
     })
 
-    it('warns when solution is empty', async () => {
+    it('warns when solution is empty', () => {
       const config = makeConfig({ solution: '  ' })
-      const result = await validateScenario(config)
+      const result = validateScenario(config)
 
       expect(result.warnings.some((w) => w.includes('solution'))).toBe(true)
     })
 
-    it('warns when no evaluation criteria defined', async () => {
+    it('warns when no evaluation criteria defined', () => {
       const config = makeConfig({ evaluation: undefined })
-      const result = await validateScenario(config)
+      const result = validateScenario(config)
 
       expect(result.warnings.some((w) => w.includes('evaluation'))).toBe(true)
     })
   })
 
   describe('validateScenarioOrThrow', () => {
-    it('throws ScenarioValidationError on errors', async () => {
+    it('throws ScenarioValidationError on errors', () => {
       const config = makeConfig({ briefing: '  ' })
 
-      await expect(validateScenarioOrThrow(config)).rejects.toThrow(ScenarioValidationError)
+      expect(() => validateScenarioOrThrow(config)).toThrow(ScenarioValidationError)
     })
 
-    it('returns result when valid', async () => {
+    it('returns result when valid', () => {
       const config = makeConfig()
-      const result = await validateScenarioOrThrow(config)
+      const result = validateScenarioOrThrow(config)
 
       expect(result.valid).toBe(true)
     })

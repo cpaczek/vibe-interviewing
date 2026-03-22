@@ -77,6 +77,10 @@ export async function discoverBuiltInScenarios(): Promise<ScenarioInfo[]> {
         config,
         builtIn: true,
       })
+    } else {
+      console.warn(
+        `Warning: scenario "${entry.name}" listed in registry but ${scenarioConfigPath} not found`,
+      )
     }
   }
 

@@ -58,7 +58,7 @@ export class SessionManager {
     for (const p of config.patch) {
       const filePath = join(sessionDir, p.file)
       const content = await readFile(filePath, 'utf-8')
-      const patched = content.replace(p.find, p.replace)
+      const patched = content.replaceAll(p.find, p.replace)
       if (patched === content) {
         throw new SetupError(
           `patch ${p.file}`,
@@ -71,10 +71,10 @@ export class SessionManager {
     // 3. Wipe git history so candidate can't see the injected changes
     onProgress?.('Preparing workspace...')
     await rm(join(sessionDir, '.git'), { recursive: true, force: true })
-    execSync('git init && git add -A && git commit -m "initial"', {
-      cwd: sessionDir,
-      stdio: 'ignore',
-    })
+    execSync(
+      'git init && git add -A && git -c user.name=vibe -c user.email=vibe@local commit -m "initial"',
+      { cwd: sessionDir, stdio: 'ignore' },
+    )
 
     // 4. Remove scenario.yaml from workspace (interviewer-only data)
     await rm(join(sessionDir, 'scenario.yaml'), { force: true })

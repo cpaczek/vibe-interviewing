@@ -17,14 +17,17 @@ export function error(message: string): void {
   console.error(chalk.red('✗'), message)
 }
 
-/** Handle errors with user-friendly messages */
-export function handleError(err: unknown): void {
+/**
+ * Format an error with user-friendly messages and return an exit code.
+ * Does not call process.exit — callers decide whether to exit.
+ */
+export function formatError(err: unknown): number {
   if (err instanceof VibeError) {
     error(err.message)
     if (err.hint) {
       console.error(chalk.dim(`  ${err.hint}`))
     }
-    process.exit(1)
+    return 1
   }
 
   if (err instanceof Error) {
@@ -32,9 +35,15 @@ export function handleError(err: unknown): void {
     if (process.env['DEBUG']) {
       console.error(err.stack)
     }
-    process.exit(1)
+    return 1
   }
 
   error(String(err))
-  process.exit(1)
+  return 1
+}
+
+/** Handle errors with user-friendly messages and exit */
+export function handleError(err: unknown): never {
+  const code = formatError(err)
+  process.exit(code)
 }

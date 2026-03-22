@@ -19,6 +19,7 @@ export function registerStartCommand(program: Command): void {
     .command('start [scenario]')
     .description('Start an interview — clone a scenario repo and launch Claude Code')
     .option('-s, --scenario-file <path>', 'Path to a local scenario.yaml file')
+    .option('-w, --workdir <path>', 'Custom workspace directory for the session')
     .option('-t, --tool <name>', 'AI tool to use (default: claude-code)')
     .option('-m, --model <model>', 'Model to use')
     .option('--no-web', 'Disable web search/fetch')
@@ -27,6 +28,7 @@ export function registerStartCommand(program: Command): void {
         scenarioName: string | undefined,
         options: {
           scenarioFile?: string
+          workdir?: string
           tool?: string
           model?: string
           web?: boolean
@@ -86,10 +88,11 @@ export function registerStartCommand(program: Command): void {
           spinner.start()
 
           const manager = new SessionManager(selectedTool.launcher)
+          const workdir = options.workdir ? resolve(options.workdir) : undefined
           try {
             const { session, config: fullConfig } = await manager.createSession(
               config,
-              undefined,
+              workdir,
               (stage) => {
                 spinner.text = stage
               },

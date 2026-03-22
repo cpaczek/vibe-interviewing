@@ -17,7 +17,7 @@ export interface ValidationResult {
  * @param config - The scenario config to validate
  * @returns Validation result with errors and warnings
  */
-export async function validateScenario(config: ScenarioConfig): Promise<ValidationResult> {
+export function validateScenario(config: ScenarioConfig): ValidationResult {
   const warnings: string[] = []
   const errors: string[] = []
 
@@ -36,9 +36,13 @@ export async function validateScenario(config: ScenarioConfig): Promise<Validati
     errors.push('repo cannot be empty')
   }
 
-  // Check commit is pinned
+  // Check commit is a valid SHA
   if (!config.commit.trim()) {
     errors.push('commit cannot be empty — pin to a specific commit SHA for reproducibility')
+  } else if (!/^[0-9a-f]{7,40}$/i.test(config.commit.trim())) {
+    errors.push(
+      'commit must be a hex SHA (7-40 characters) — branch/tag names are not allowed for reproducibility',
+    )
   }
 
   // Warnings for non-critical missing content
@@ -68,8 +72,8 @@ export async function validateScenario(config: ScenarioConfig): Promise<Validati
  * @returns Validation result (only returned if valid)
  * @throws ScenarioValidationError if the config has errors
  */
-export async function validateScenarioOrThrow(config: ScenarioConfig): Promise<ValidationResult> {
-  const result = await validateScenario(config)
+export function validateScenarioOrThrow(config: ScenarioConfig): ValidationResult {
+  const result = validateScenario(config)
   if (!result.valid) {
     throw new ScenarioValidationError('scenario validation failed', result.errors)
   }

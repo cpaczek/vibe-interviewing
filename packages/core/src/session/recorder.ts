@@ -76,8 +76,11 @@ export class SessionRecorder {
   /** Create a SessionRecorder pre-populated with events from serialized data */
   static fromJSON(data: RecordingData): SessionRecorder {
     const recorder = new SessionRecorder()
-    // Override the startedAt via Object.defineProperty since it's readonly
+    // Override startedAt and startTime to preserve original timing
     Object.defineProperty(recorder, 'startedAt', { value: data.startedAt })
+    Object.defineProperty(recorder, 'startTime', {
+      value: new Date(data.startedAt).getTime(),
+    })
     for (const event of data.events) {
       recorder.events.push({ ...event })
     }

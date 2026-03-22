@@ -18,7 +18,7 @@ export function registerValidateCommand(program: Command): void {
         log.success(`Parsed scenario: ${config.name}`)
 
         // Validate
-        const result = await validateScenario(config)
+        const result = validateScenario(config)
 
         if (result.warnings.length > 0) {
           console.log(chalk.yellow('\nWarnings:'))

@@ -49,7 +49,8 @@ export async function importRepo(
   return dest
 }
 
-/** Normalize various repo URL formats to full HTTPS URLs */
+/** Normalize various repo URL formats to full HTTPS GitHub URLs.
+ *  Currently only handles GitHub SSH URLs — other hosts pass through as-is. */
 function normalizeRepoUrl(input: string): string {
   // Already a full URL
   if (input.startsWith('http://') || input.startsWith('https://')) {
