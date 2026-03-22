@@ -1,0 +1,7 @@
+scenarios:
+  - name: rate-limiter-boundary
+    description: "Off-by-one in express-rate-limit's sliding window lets one extra request through"
+    difficulty: medium
+    estimated_time: '30-45m'
+    repo: 'https://github.com/express-rate-limit/express-rate-limit'
+    commit: '4e8b18bf972eff2890ed67bd11d8a08a2c6502d5'

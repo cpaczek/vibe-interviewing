@@ -10,10 +10,6 @@ export interface LaunchConfig {
   permissionMode?: 'default' | 'plan' | 'acceptEdits' | 'bypassPermissions'
   /** Tools to disallow (e.g., WebSearch for fairness) */
   disallowedTools?: string[]
-  /** Tools to explicitly allow (e.g., Bash(npm:*) for wrapper commands) */
-  allowedTools?: string[]
-  /** Environment variables to pass */
-  env?: Record<string, string>
   /** Whether to record stdout/stderr during the session */
   recording?: boolean
 }
@@ -30,7 +26,9 @@ export interface LaunchedProcess {
 
 /** Interface for AI coding tool launchers */
 export interface AIToolLauncher {
+  /** Internal name identifier */
   readonly name: string
+  /** Human-readable display name */
   readonly displayName: string
 
   /** Check if this tool is installed and accessible */

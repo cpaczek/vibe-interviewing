@@ -1,16 +1,18 @@
 import { ClaudeCodeLauncher } from './claude-code.js'
-import { OpenCodeLauncher } from './open-code.js'
 import type { AIToolLauncher } from './types.js'
 
 /** All supported AI tool launchers */
-const launchers: AIToolLauncher[] = [new ClaudeCodeLauncher(), new OpenCodeLauncher()]
+const launchers: AIToolLauncher[] = [new ClaudeCodeLauncher()]
 
+/** Information about a detected AI coding tool */
 export interface DetectedTool {
+  /** The launcher instance */
   launcher: AIToolLauncher
+  /** Installed version string, or null if unknown */
   version: string | null
 }
 
-/** Detect which AI coding tools are installed */
+/** Detect which AI coding tools are installed on the system */
 export async function detectInstalledTools(): Promise<DetectedTool[]> {
   const results: DetectedTool[] = []
 
@@ -25,7 +27,7 @@ export async function detectInstalledTools(): Promise<DetectedTool[]> {
   return results
 }
 
-/** Get a launcher by name */
+/** Get a launcher by its internal name */
 export function getLauncher(name: string): AIToolLauncher | undefined {
   return launchers.find((l) => l.name === name)
 }

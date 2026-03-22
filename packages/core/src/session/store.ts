@@ -55,8 +55,8 @@ export async function listSessions(): Promise<StoredSession[]> {
   return sessions.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
 }
 
-/** List only active (non-destroyed) sessions */
+/** List only active (non-complete) sessions */
 export async function listActiveSessions(): Promise<StoredSession[]> {
   const all = await listSessions()
-  return all.filter((s) => s.status !== 'destroyed')
+  return all.filter((s) => s.status !== 'complete')
 }

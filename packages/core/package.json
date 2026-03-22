@@ -1,7 +1,7 @@
 {
   "name": "@vibe-interviewing/core",
   "version": "0.1.0",
-  "description": "Core library for vibe-interviewing — scenario engine, Docker runtime, AI tool launchers",
+  "description": "Core library for vibe-interviewing — scenario engine, session management, AI tool launchers",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -20,13 +20,12 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "dockerode": "^4.0.4",
+    "@vibe-interviewing/scenarios": "workspace:*",
     "simple-git": "^3.27.0",
     "yaml": "^2.7.0",
     "zod": "^3.24.0"
   },
   "devDependencies": {
-    "@types/dockerode": "^3.3.34",
     "@types/node": "^20.17.0",
     "tsup": "^8.3.0",
     "typescript": "^5.7.0",

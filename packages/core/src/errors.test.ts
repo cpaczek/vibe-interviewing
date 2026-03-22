@@ -1,13 +1,12 @@
 import { describe, it, expect } from 'vitest'
 import {
   VibeError,
-  DockerNotFoundError,
-  DockerNotRunningError,
   ScenarioNotFoundError,
   ScenarioValidationError,
   AIToolNotFoundError,
   SessionNotFoundError,
-  HealthCheckFailedError,
+  GitCloneError,
+  SetupError,
 } from './errors.js'
 
 describe('VibeError', () => {
@@ -20,47 +19,6 @@ describe('VibeError', () => {
 
   it('is an instance of Error', () => {
     const err = new VibeError('msg', 'CODE')
-    expect(err).toBeInstanceOf(Error)
-  })
-})
-
-describe('DockerNotFoundError', () => {
-  it('has correct code', () => {
-    const err = new DockerNotFoundError()
-    expect(err.code).toBe('DOCKER_NOT_FOUND')
-  })
-
-  it('has a hint with install link', () => {
-    const err = new DockerNotFoundError()
-    expect(err.hint).toContain('https://docs.docker.com/get-docker/')
-  })
-
-  it('has a descriptive message', () => {
-    const err = new DockerNotFoundError()
-    expect(err.message).toContain('Docker')
-  })
-
-  it('is an instance of both VibeError and Error', () => {
-    const err = new DockerNotFoundError()
-    expect(err).toBeInstanceOf(VibeError)
-    expect(err).toBeInstanceOf(Error)
-  })
-})
-
-describe('DockerNotRunningError', () => {
-  it('has correct code', () => {
-    const err = new DockerNotRunningError()
-    expect(err.code).toBe('DOCKER_NOT_RUNNING')
-  })
-
-  it('has a hint', () => {
-    const err = new DockerNotRunningError()
-    expect(err.hint).toContain('Start Docker Desktop')
-  })
-
-  it('is an instance of both VibeError and Error', () => {
-    const err = new DockerNotRunningError()
-    expect(err).toBeInstanceOf(VibeError)
     expect(err).toBeInstanceOf(Error)
   })
 })
@@ -133,11 +91,6 @@ describe('AIToolNotFoundError', () => {
     expect(err.hint).toContain('npm install -g @anthropic-ai/claude-code')
   })
 
-  it('provides known install hint for open-code', () => {
-    const err = new AIToolNotFoundError('open-code')
-    expect(err.hint).toContain('https://opencode.ai')
-  })
-
   it('provides fallback hint for unknown tool', () => {
     const err = new AIToolNotFoundError('some-tool')
     expect(err.hint).toContain('Install some-tool')
@@ -173,25 +126,47 @@ describe('SessionNotFoundError', () => {
   })
 })
 
-describe('HealthCheckFailedError', () => {
+describe('GitCloneError', () => {
   it('has correct code', () => {
-    const err = new HealthCheckFailedError('curl localhost', 5)
-    expect(err.code).toBe('HEALTH_CHECK_FAILED')
+    const err = new GitCloneError('https://github.com/test/repo')
+    expect(err.code).toBe('GIT_CLONE_FAILED')
   })
 
-  it('includes command and retries in message', () => {
-    const err = new HealthCheckFailedError('curl localhost', 5)
-    expect(err.message).toContain('curl localhost')
-    expect(err.message).toContain('5')
+  it('includes repo in message', () => {
+    const err = new GitCloneError('https://github.com/test/repo')
+    expect(err.message).toContain('https://github.com/test/repo')
   })
 
-  it('has a helpful hint', () => {
-    const err = new HealthCheckFailedError('curl localhost', 5)
-    expect(err.hint).toContain('Dockerfile')
+  it('includes reason when provided', () => {
+    const err = new GitCloneError('https://github.com/test/repo', 'auth failed')
+    expect(err.message).toContain('auth failed')
   })
 
   it('is an instance of both VibeError and Error', () => {
-    const err = new HealthCheckFailedError('curl localhost', 5)
+    const err = new GitCloneError('https://github.com/test/repo')
+    expect(err).toBeInstanceOf(VibeError)
+    expect(err).toBeInstanceOf(Error)
+  })
+})
+
+describe('SetupError', () => {
+  it('has correct code', () => {
+    const err = new SetupError('npm install')
+    expect(err.code).toBe('SETUP_FAILED')
+  })
+
+  it('includes command in message', () => {
+    const err = new SetupError('npm install')
+    expect(err.message).toContain('npm install')
+  })
+
+  it('includes reason when provided', () => {
+    const err = new SetupError('npm install', 'ENOENT')
+    expect(err.message).toContain('ENOENT')
+  })
+
+  it('is an instance of both VibeError and Error', () => {
+    const err = new SetupError('npm install')
     expect(err).toBeInstanceOf(VibeError)
     expect(err).toBeInstanceOf(Error)
   })

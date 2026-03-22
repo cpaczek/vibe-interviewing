@@ -10,30 +10,10 @@ export class VibeError extends Error {
   }
 }
 
-export class DockerNotFoundError extends VibeError {
-  constructor() {
-    super(
-      'Docker is not installed',
-      'DOCKER_NOT_FOUND',
-      'Install Docker Desktop: https://docs.docker.com/get-docker/',
-    )
-  }
-}
-
-export class DockerNotRunningError extends VibeError {
-  constructor() {
-    super(
-      'Docker is installed but not running',
-      'DOCKER_NOT_RUNNING',
-      'Start Docker Desktop and try again',
-    )
-  }
-}
-
 export class ScenarioNotFoundError extends VibeError {
-  constructor(path: string) {
+  constructor(name: string) {
     super(
-      `Scenario not found at: ${path}`,
+      `Scenario not found: ${name}`,
       'SCENARIO_NOT_FOUND',
       'Run `vibe-interviewing list` to see available scenarios',
     )
@@ -52,7 +32,6 @@ export class ScenarioValidationError extends VibeError {
 export class AIToolNotFoundError extends VibeError {
   static readonly installHints: Record<string, string> = {
     'claude-code': 'Install Claude Code: npm install -g @anthropic-ai/claude-code',
-    'open-code': 'Install Open Code: see https://opencode.ai',
   }
 
   constructor(tool: string) {
@@ -69,27 +48,27 @@ export class SessionNotFoundError extends VibeError {
     super(
       `Session not found: ${id}`,
       'SESSION_NOT_FOUND',
-      'Run `vibe-interviewing list --active` to see active sessions',
+      'Run `vibe-interviewing list` to see active sessions',
     )
   }
 }
 
-export class ApiKeyMissingError extends VibeError {
-  constructor() {
+export class GitCloneError extends VibeError {
+  constructor(repo: string, reason?: string) {
     super(
-      'ANTHROPIC_API_KEY environment variable is not set',
-      'API_KEY_MISSING',
-      'Get your API key at: https://console.anthropic.com/',
+      `Failed to clone repository: ${repo}${reason ? ` — ${reason}` : ''}`,
+      'GIT_CLONE_FAILED',
+      'Check the repo URL and your network connection',
     )
   }
 }
 
-export class HealthCheckFailedError extends VibeError {
-  constructor(command: string, retries: number) {
+export class SetupError extends VibeError {
+  constructor(command: string, reason?: string) {
     super(
-      `Health check failed after ${retries} retries: ${command}`,
-      'HEALTH_CHECK_FAILED',
-      'Check the scenario Dockerfile and setup_commands for errors',
+      `Setup command failed: ${command}${reason ? ` — ${reason}` : ''}`,
+      'SETUP_FAILED',
+      'Check the scenario setup commands and try again',
     )
   }
 }

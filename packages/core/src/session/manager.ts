@@ -1,57 +1,119 @@
-import type { Runtime, Session } from '../runtime/types.js'
+import { execSync } from 'node:child_process'
+import { readFile, writeFile, mkdir, rm } from 'node:fs/promises'
+import { join } from 'node:path'
+import { homedir } from 'node:os'
+import { randomBytes } from 'node:crypto'
 import type { AIToolLauncher, LaunchConfig } from '../launcher/types.js'
 import type { ScenarioConfig } from '../scenario/types.js'
-import { toStoredSession } from './types.js'
+import { importRepo } from '../scenario/importer.js'
+import { generateSystemPrompt } from '../scenario/loader.js'
+import { SetupError } from '../errors.js'
 import { saveSession, deleteSession } from './store.js'
-import { join } from 'node:path'
+import { toStoredSession } from './types.js'
+import type { Session } from './types.js'
+
+export type { Session }
+
+/** Callback for reporting session progress */
+export type ProgressCallback = (stage: string) => void
 
 /** Manages the lifecycle of an interview session */
 export class SessionManager {
-  constructor(
-    private runtime: Runtime,
-    private launcher: AIToolLauncher,
-  ) {}
+  constructor(private launcher: AIToolLauncher) {}
 
-  /** Create and start a full interview session */
+  /**
+   * Create a new interview session.
+   *
+   * Flow:
+   * 1. Clone the repo at a pinned commit
+   * 2. Apply bug patches (find/replace in source files)
+   * 3. Wipe git history so the candidate can't diff to find the bug
+   * 4. Remove scenario.yaml from workspace (interviewer-only)
+   * 5. Write BRIEFING.md and system prompt
+   * 6. Run setup commands (npm install, etc.)
+   */
   async createSession(
-    scenario: ScenarioConfig,
-    scenarioPath: string,
-    _launchConfig: Partial<LaunchConfig> = {},
-  ): Promise<Session> {
-    // Create the environment (Docker container + workspace)
-    const session = await this.runtime.create(scenario, scenarioPath)
+    config: ScenarioConfig,
+    workdir?: string,
+    onProgress?: ProgressCallback,
+  ): Promise<{ session: Session; config: ScenarioConfig }> {
+    const id = randomBytes(4).toString('hex')
+    const sessionDir = workdir ?? join(homedir(), 'vibe-sessions', `${config.name}-${id}`)
 
-    // Save session to disk for tracking
+    const session: Session = {
+      id,
+      scenarioName: config.name,
+      workdir: sessionDir,
+      systemPromptPath: '',
+      status: 'cloning',
+      createdAt: new Date().toISOString(),
+    }
+
+    // 1. Clone the repo at the pinned commit
+    onProgress?.('Cloning repository...')
+    await importRepo(config.repo, sessionDir, config.commit)
+
+    // 2. Apply bug patches
+    onProgress?.('Injecting scenario...')
+    for (const p of config.patch) {
+      const filePath = join(sessionDir, p.file)
+      const content = await readFile(filePath, 'utf-8')
+      const patched = content.replace(p.find, p.replace)
+      if (patched === content) {
+        throw new SetupError(
+          `patch ${p.file}`,
+          `Could not find text to replace. The upstream code may have changed.`,
+        )
+      }
+      await writeFile(filePath, patched)
+    }
+
+    // 3. Wipe git history so candidate can't see the injected changes
+    onProgress?.('Preparing workspace...')
+    await rm(join(sessionDir, '.git'), { recursive: true, force: true })
+    execSync('git init && git add -A && git commit -m "initial"', {
+      cwd: sessionDir,
+      stdio: 'ignore',
+    })
+
+    // 4. Remove scenario.yaml from workspace (interviewer-only data)
+    await rm(join(sessionDir, 'scenario.yaml'), { force: true })
+
+    // 5. Write BRIEFING.md
+    await writeFile(join(sessionDir, 'BRIEFING.md'), `# Interview Briefing\n\n${config.briefing}`)
+
+    // Write system prompt OUTSIDE the workspace
+    const promptDir = join(homedir(), '.vibe-interviewing', 'prompts')
+    await mkdir(promptDir, { recursive: true })
+    const systemPromptPath = join(promptDir, `${id}.md`)
+    await writeFile(systemPromptPath, generateSystemPrompt(config))
+    session.systemPromptPath = systemPromptPath
+
+    // 6. Run setup commands
+    session.status = 'setting-up'
+    for (const cmd of config.setup) {
+      onProgress?.(`Running: ${cmd}`)
+      try {
+        execSync(cmd, { cwd: sessionDir, stdio: 'pipe', timeout: 300000 })
+      } catch (err) {
+        throw new SetupError(cmd, err instanceof Error ? err.message : String(err))
+      }
+    }
+
+    session.status = 'running'
     await saveSession(toStoredSession(session))
-
-    // Start the environment
-    await this.runtime.start(session)
-    await saveSession(toStoredSession(session))
-
-    return session
+    return { session, config }
   }
 
-  /** Launch the AI tool for a running session */
+  /** Launch the AI coding tool for an active session */
   async launchAITool(
     session: Session,
-    scenario: ScenarioConfig,
+    _config: ScenarioConfig,
     launchConfig: Partial<LaunchConfig> = {},
   ): Promise<{ exitCode: number }> {
-    const workdir = this.runtime.getWorkdir(session)
-
-    // System prompt is stored outside the workspace
-    const workdirParent = join(workdir, '..')
-    const systemPromptPath = join(workdirParent, 'system-prompt.md')
-
-    // Build allowed tools from the scenario's commands list.
-    // Each command in the scenario gets a Bash(<cmd>:*) permission
-    // so Claude Code can run e.g. `npm test` without prompting.
-    const allowedTools = buildAllowedTools(scenario.environment.commands)
-
-    const config: LaunchConfig = {
+    const fullConfig: LaunchConfig = {
       scenarioName: session.scenarioName,
-      systemPromptPath,
-      allowedTools,
+      systemPromptPath: session.systemPromptPath,
       ...launchConfig,
     }
 
@@ -59,18 +121,22 @@ export class SessionManager {
     session.startedAt = new Date().toISOString()
     await saveSession(toStoredSession(session))
 
-    // Launch and wait for the AI tool to exit
-    const process = await this.launcher.launch(workdir, config)
-    return process.wait()
+    const proc = await this.launcher.launch(session.workdir, fullConfig)
+    const result = await proc.wait()
+
+    session.status = 'complete'
+    session.completedAt = new Date().toISOString()
+    await saveSession(toStoredSession(session))
+
+    return result
   }
 
-  /** Destroy a session */
+  /** Destroy a session by removing its stored data */
   async destroySession(session: Session): Promise<void> {
-    await this.runtime.destroy(session)
     await deleteSession(session.id)
   }
 
-  /** Get elapsed time since the AI tool was launched */
+  /** Get elapsed time since the AI tool was launched, formatted as a human-readable string */
   getElapsedTime(session: Session): string | null {
     if (!session.startedAt) return null
 
@@ -81,38 +147,4 @@ export class SessionManager {
     if (minutes === 0) return `${seconds}s`
     return `${minutes}m ${seconds}s`
   }
-}
-
-/**
- * Generate Claude Code --allowedTools from the scenario commands list.
- *
- * For each wrapper command (npm, node, curl, etc.) we allow:
- *   Bash(npm:*)  — auto-approve any bash invocation starting with `npm`
- *
- * We also always allow the .vibe/bin/vibe-exec catch-all wrapper and
- * standard file operations (Read, Edit, Write, etc.) so the candidate
- * can work without constant permission prompts.
- */
-function buildAllowedTools(commands: string[]): string[] {
-  const tools: string[] = []
-
-  // Allow each wrapper command
-  for (const cmd of commands) {
-    tools.push(`Bash(${cmd}:*)`)
-  }
-
-  // Allow the catch-all vibe-exec wrapper
-  tools.push('Bash(vibe-exec:*)')
-  tools.push('Bash(.vibe/bin/vibe-exec:*)')
-
-  // Allow common read-only / edit operations so the candidate
-  // can navigate and modify code freely
-  tools.push('Read', 'Edit', 'Write', 'Glob', 'Grep')
-
-  // Allow cat/ls/pwd/echo for basic shell navigation
-  tools.push('Bash(cat:*)', 'Bash(ls:*)', 'Bash(pwd:*)', 'Bash(echo:*)')
-  tools.push('Bash(head:*)', 'Bash(tail:*)', 'Bash(wc:*)', 'Bash(find:*)')
-  tools.push('Bash(grep:*)', 'Bash(which:*)', 'Bash(env:*)')
-
-  return tools
 }

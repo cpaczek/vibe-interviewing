@@ -1,21 +1,24 @@
 import type { Command } from 'commander'
 import chalk from 'chalk'
+import { resolve } from 'node:path'
 import { loadScenarioConfig, validateScenario } from '@vibe-interviewing/core'
 import * as log from '../utils/logger.js'
 
 export function registerValidateCommand(program: Command): void {
   program
     .command('validate')
-    .description('Validate a scenario configuration')
-    .argument('<path>', 'Path to scenario directory')
+    .description('Validate a scenario configuration file')
+    .argument('<path>', 'Path to scenario.yaml file')
     .action(async (scenarioPath: string) => {
       try {
+        const resolvedPath = resolve(scenarioPath)
+
         // Load config
-        const config = await loadScenarioConfig(scenarioPath)
+        const config = await loadScenarioConfig(resolvedPath)
         log.success(`Parsed scenario: ${config.name}`)
 
         // Validate
-        const result = await validateScenario(scenarioPath, config)
+        const result = await validateScenario(config)
 
         if (result.warnings.length > 0) {
           console.log(chalk.yellow('\nWarnings:'))

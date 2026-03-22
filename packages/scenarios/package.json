@@ -1,0 +1,21 @@
+{
+  "name": "@vibe-interviewing/scenarios",
+  "version": "0.1.0",
+  "description": "Built-in interview scenarios for vibe-interviewing",
+  "type": "module",
+  "main": "./index.js",
+  "types": "./index.d.ts",
+  "files": [
+    "index.js",
+    "index.d.ts",
+    "registry.yaml",
+    "rate-limiter-boundary/"
+  ],
+  "scripts": {},
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/cpaczek/vibe-interviewing.git",
+    "directory": "packages/scenarios"
+  }
+}

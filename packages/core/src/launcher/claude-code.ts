@@ -7,10 +7,12 @@ import { SessionRecorder } from '../session/recorder.js'
 
 const execFileAsync = promisify(execFile)
 
+/** Launcher for Anthropic's Claude Code CLI */
 export class ClaudeCodeLauncher implements AIToolLauncher {
   readonly name = 'claude-code'
   readonly displayName = 'Claude Code'
 
+  /** Check if the claude CLI is installed */
   async isInstalled(): Promise<boolean> {
     try {
       await execFileAsync('claude', ['--version'])
@@ -20,6 +22,7 @@ export class ClaudeCodeLauncher implements AIToolLauncher {
     }
   }
 
+  /** Get the installed Claude Code version */
   async getVersion(): Promise<string | null> {
     try {
       const { stdout } = await execFileAsync('claude', ['--version'])
@@ -29,11 +32,11 @@ export class ClaudeCodeLauncher implements AIToolLauncher {
     }
   }
 
+  /** Launch Claude Code in the given working directory with the provided config */
   async launch(workdir: string, config: LaunchConfig): Promise<LaunchedProcess> {
     const args: string[] = []
 
-    // Inject hidden system prompt — read file and pass inline
-    // to avoid any issues with file path resolution
+    // Inject hidden system prompt
     const systemPrompt = await readFile(config.systemPromptPath, 'utf-8')
     args.push('--append-system-prompt', systemPrompt)
 
@@ -48,18 +51,12 @@ export class ClaudeCodeLauncher implements AIToolLauncher {
       args.push('--model', config.model)
     }
 
-    // Allow specific tools — wrapper commands get auto-approved
-    if (config.allowedTools && config.allowedTools.length > 0) {
-      args.push('--allowedTools', ...config.allowedTools)
-    }
-
     // Disallow tools for fairness
     if (config.disallowedTools && config.disallowedTools.length > 0) {
       args.push('--disallowedTools', ...config.disallowedTools)
     }
 
     // When recording, pipe stdout/stderr through the recorder
-    // instead of using stdio: 'inherit'
     const useRecording = config.recording === true
     const recorder = useRecording ? new SessionRecorder() : undefined
 
@@ -67,12 +64,7 @@ export class ClaudeCodeLauncher implements AIToolLauncher {
     const proc = spawn('claude', args, {
       cwd: workdir,
       stdio: useRecording ? ['inherit', 'pipe', 'pipe'] : 'inherit',
-      env: {
-        ...process.env,
-        ...config.env,
-        // Prepend .vibe/bin to PATH for transparent command wrapping
-        PATH: `${workdir}/.vibe/bin:${process.env['PATH'] ?? ''}`,
-      },
+      env: { ...process.env },
     })
 
     // Forward piped output to the terminal and record it

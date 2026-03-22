@@ -1,210 +1,144 @@
 # Create Interview Scenario
 
-You are creating an interview scenario for **vibe-interviewing**, a platform that evaluates how engineers work with AI tools. Your job is to analyze the current codebase and generate a complete `.vibe/` directory with all necessary configuration files.
+You are creating an interview scenario for **vibe-interviewing**, a platform that evaluates how engineers work with AI tools. Scenarios are real open-source codebases with subtle bugs injected via find/replace patches. Candidates clone the repo, read a briefing, and debug with Claude Code.
 
 ## Step 1: Analyze the Codebase
 
-First, explore the project structure. Understand:
+Explore the current project. Understand:
 
-- What language/framework is used
-- How the project is organized (entry points, routes, models, utilities, tests)
-- What package manager is used (npm, pnpm, yarn, pip, cargo, go)
-- Whether there's an existing Dockerfile
-- What ports the app uses
-- What test framework is in place
+- Language, framework, and project structure
+- Test framework and how to run tests
+- Key source files and their purpose
+- Good areas for realistic bug injection (boundary conditions, async logic, error handling, caching)
 
 ## Step 2: Ask the Interviewer
 
-Ask the interviewer TWO questions:
+Ask TWO questions:
 
-1. **What type of scenario?**
-   - **Debug** — You'll inject a subtle, realistic bug into the codebase. The candidate must find and fix it.
-   - **Feature** — You'll design a feature for the candidate to build, with pre-written failing tests.
-
-2. **Any specific area or constraint?** (optional)
-   - e.g., "Focus on the authentication layer" or "Something involving the database" or "No preference, surprise me"
+1. **What area should the bug target?** (optional — e.g., "authentication", "database queries", "API validation", or "surprise me")
+2. **What difficulty level?** (easy / medium / hard)
 
 Wait for their answers before proceeding.
 
-## Step 3: Generate the Scenario
+## Step 3: Design the Bug
 
-Based on the interviewer's choices, create the scenario.
+Choose a subtle, realistic bug. Good bugs:
 
-### For Debug Scenarios:
+- Off-by-one errors in boundary conditions
+- Wrong comparison operator (`<` vs `<=`, `>` vs `>=`)
+- Incorrect default value or missing edge case
+- Race condition or timing issue
+- Wrong variable used in a calculation
+- Missing null/undefined check that only fails with specific data
 
-1. Pick a realistic area of the codebase where a bug would be plausible
-2. Design a **subtle** bug — NOT a syntax error or obvious crash. Good bugs:
-   - Race conditions
-   - Off-by-one errors in edge cases
-   - Incorrect algorithm selection under certain conditions
-   - Missing null checks that only fail with specific data
-   - Time-dependent behavior (timezone, date boundary)
-   - Caching issues
-3. **Modify the actual source code** to inject the bug
-4. Write the solution (what the original code was, and how to fix it)
-5. If tests exist, make sure 1-3 tests fail due to the bug (add failing tests if needed)
+The bug should:
 
-### For Feature Scenarios:
+- Be 1-3 lines of change (a find/replace patch)
+- Cause 1-3 existing tests to fail (or add a failing test if needed)
+- Take a competent engineer with AI ~30-45 minutes to find
+- Look like a plausible mistake, not sabotage
 
-1. Design a feature that naturally extends the codebase (new endpoint, new module, etc.)
-2. Write **failing tests** that define the feature spec (the candidate makes them pass)
-3. The feature should take 30-60 minutes with AI assistance
-4. Include clear acceptance criteria in the briefing
+## Step 4: Get the Commit SHA
 
-## Step 4: Create `.vibe/` Files
+Find the current HEAD commit:
 
-Create ALL of these files in a `.vibe/` directory at the project root:
+```bash
+git rev-parse HEAD
+```
 
-### `.vibe/scenario.yaml`
+This SHA will be pinned in the scenario config for reproducibility.
 
-Must conform to this exact schema:
+## Step 5: Create `scenario.yaml`
+
+Create a `scenario.yaml` file at the project root with this exact schema:
 
 ```yaml
-name: 'Short descriptive name'
-version: '1.0.0'
-description: 'One-line description'
-type: debug # or: feature, custom
-difficulty: medium # or: easy, hard
-estimated_time: '45m' # realistic estimate
-tags: [relevant, tech, tags]
+name: 'short-kebab-case-name'
+description: 'One-line description of the bug'
+difficulty: medium # easy | medium | hard
+estimated_time: '30-45m'
+tags:
+  - relevant
+  - tech
+  - tags
+
+repo: 'https://github.com/owner/repo'
+commit: 'full-40-char-sha'
+
+setup:
+  - 'npm install' # or pip install, cargo build, etc.
+
+patch:
+  - file: 'path/to/file.ts'
+    find: 'original code to find'
+    replace: 'modified code with bug'
 
 briefing: |
-  This is what the CANDIDATE sees. Write it as if you're their team lead
-  explaining the problem. Include:
-  - Context about what the app does
-  - What's going wrong (for debug) or what needs to be built (for feature)
+  Write this as if you're a team lead messaging the candidate on Slack.
+  Include:
+  - Context about what the project does
+  - What's going wrong (symptoms, not cause)
   - How to run the app and tests
-  - Any relevant endpoints or commands
+  - Any relevant files or endpoints to start with
 
-environment:
-  dockerfile: ./Dockerfile # path relative to .vibe/
-  ports:
-    - '3000:3000' # host:container format
-  commands: [npm, node, npx, curl] # commands that need Docker wrapping
-  setup_commands:
-    - npm install # run inside container on start
-  healthcheck: # optional, for apps with a server
-    command: 'curl -sf http://localhost:3000/health || exit 1'
-    interval: '2s'
-    retries: 20
-  env: {} # optional env vars
-  services: {} # optional docker-compose services (e.g., redis, postgres)
-
-ai_context:
+ai_rules:
   role: |
-    You are assisting a candidate in a technical interview.
-    Describe the scenario type and what they're working on.
+    You are a senior engineer helping a candidate debug a bug.
+    Act as a patient but not overly helpful colleague.
   rules:
-    - Do NOT reveal the root cause or solution directly
-    - Guide with questions, not answers
-    - If stuck for 10+ minutes, offer a subtle hint
-    - Encourage reading error messages, logs, and tests
-    - Let the candidate drive — don't take over
+    - 'Never reveal the exact location or nature of the bug directly'
+    - 'If asked, confirm whether the candidate is looking in the right area'
+    - 'Encourage the candidate to write or run tests to reproduce the issue'
+    - 'If stuck for 10+ minutes, offer a directional hint'
+    - 'Praise good debugging methodology'
   knowledge: |
-    Detailed description of the bug/solution that the AI knows
-    but must NOT share directly. Include file paths, line numbers,
-    and the exact nature of the issue.
+    Detailed description of the bug: file, line, what was changed,
+    and what the fix is. This is hidden from the candidate.
+
+solution: |
+  Describe the exact fix with file path and code change.
 
 evaluation:
   criteria:
-    - Did they read error messages and logs before jumping to code?
-    - Did they form a hypothesis before making changes?
-    - Did they write tests to verify their fix/feature?
-    - How effectively did they prompt the AI?
-    - Did they understand the root cause (not just patch symptoms)?
-  expected_solution: |
-    Describe what the correct fix/implementation looks like.
+    - 'Identified the bug location'
+    - 'Understood the root cause'
+    - 'Used tests to reproduce and verify'
+    - 'Applied the correct fix'
+    - 'Used AI effectively as a debugging partner'
+  expected_fix: 'One-line description of the fix'
+
+license: MIT # license of the original project
 ```
 
-### `.vibe/Dockerfile`
+## Step 6: Verify the Patch
 
-Generate a minimal Dockerfile. The source code is volume-mounted at `/app` at runtime — do NOT use `COPY . .`. Example for Node.js:
+Apply the patch manually and confirm:
 
-```dockerfile
-FROM node:20-slim
-RUN apt-get update && apt-get install -y --no-install-recommends curl && rm -rf /var/lib/apt/lists/*
-WORKDIR /app
-```
-
-Example for Python:
-
-```dockerfile
-FROM python:3.12-slim
-RUN apt-get update && apt-get install -y --no-install-recommends curl && rm -rf /var/lib/apt/lists/*
-WORKDIR /app
-```
-
-### `.vibe/solution.md`
-
-The interviewer's reference. Include:
-
-- What the bug is (for debug) or what the correct implementation looks like (for feature)
-- Which files need to change
-- The exact fix with code snippets
-- Expected test results after the fix
-
-### `.vibe/system-prompt.md`
-
-Formatted version of the ai_context for the hidden system prompt:
-
-```markdown
-# Interview Scenario: [Name]
-
-## Your Role
-
-[role text]
-
-## Rules
-
-- [each rule as a bullet]
-
-## Knowledge (DO NOT share directly with the candidate)
-
-[knowledge text]
-```
-
-### `.vibe/evaluation.md`
-
-The evaluation rubric:
-
-```markdown
-# Evaluation: [Name]
-
-## Criteria
-
-- [each criterion as a bullet]
-
-## Expected Solution
-
-[expected solution text]
-```
-
-## Step 5: Validate
-
-After creating all files, run:
+1. The `find` string exists exactly once in the target file
+2. After replacement, 1-3 tests fail as expected
+3. The failure message is debuggable (not cryptic)
 
 ```bash
-vibe-interviewing validate .
+# Test the patch
+grep -c 'find string' path/to/file.ts  # should be 1
+sed 's/find string/replace string/' path/to/file.ts > /tmp/patched.ts
+# Run tests to see failures
 ```
 
-If validation fails, fix the issues and re-validate.
-
-## Step 6: Summary
+## Step 7: Summary
 
 Tell the interviewer:
 
-1. What scenario was created
-2. What files were modified (for debug scenarios)
-3. How to preview it: `vibe-interviewing preview .`
-4. How to test it: `vibe-interviewing test .`
-5. How to run it: `vibe-interviewing start .`
+1. What scenario was created and where the bug is
+2. Which tests will fail and why
+3. How to register it: add an entry to `packages/scenarios/registry.yaml`
+4. How to test it: `vibe-interviewing start <name>`
 
 ## Important Guidelines
 
-- The briefing should be **realistic** — write it like a real team lead explaining a real problem
-- For debug scenarios, the bug should take a competent engineer with AI ~30-45 minutes to find
-- AI rules should prevent giving away the answer but still be helpful
-- The evaluation rubric should focus on **process** (how they work) not just **outcome** (did they fix it)
-- Make sure `commands` lists every CLI tool the candidate might need
-- If the project uses a database, add it as a `service` in the environment config
-- Always include a healthcheck if the scenario involves a running server
+- The briefing must read like a **real message from a real person** — no formal documentation style
+- The `find` string in patches must be unique in the file (otherwise the wrong occurrence might be replaced)
+- Always pin to a specific commit SHA, never a branch name
+- The bug should be in **application logic**, not configuration or build files
+- AI rules should prevent giving away the answer but still be genuinely helpful
+- Evaluation criteria should focus on **process** (how they debug) not just **outcome** (did they fix it)

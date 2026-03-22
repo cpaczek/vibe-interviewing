@@ -6,5 +6,5 @@ export default defineConfig({
   dts: true,
   clean: true,
   sourcemap: true,
-  external: ['localtunnel', '@anthropic-ai/sdk'],
+  external: ['localtunnel', '@anthropic-ai/sdk', '@vibe-interviewing/scenarios'],
 })

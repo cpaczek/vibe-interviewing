@@ -11,12 +11,10 @@ import type { StoredSession } from './types.js'
  */
 describe('session store', () => {
   let tempDir: string
-  let _sessionsDir: string
   let store: typeof import('./store.js')
 
   beforeEach(async () => {
     tempDir = await mkdtemp(join(tmpdir(), 'vibe-store-'))
-    _sessionsDir = join(tempDir, '.vibe-interviewing', 'sessions')
 
     // Mock homedir to redirect SESSIONS_DIR
     vi.doMock('node:os', () => ({
@@ -37,10 +35,9 @@ describe('session store', () => {
     return {
       id: 'test-session-1',
       scenarioName: 'Test Scenario',
-      scenarioPath: '/scenarios/test',
       status: 'running',
       workdir: '/tmp/workdir',
-      ports: { 3000: 3000 },
+      systemPromptPath: '/tmp/prompts/test.md',
       createdAt: '2026-01-01T00:00:00.000Z',
       ...overrides,
     }
@@ -59,18 +56,18 @@ describe('session store', () => {
     it('preserves all fields', async () => {
       const session = makeSession({
         id: 'full-session',
-        containerId: 'abc123container',
         aiTool: 'claude-code',
         startedAt: '2026-01-01T00:05:00.000Z',
+        completedAt: '2026-01-01T01:00:00.000Z',
       })
 
       await store.saveSession(session)
       const loaded = await store.loadSession('full-session')
 
       expect(loaded).toEqual(session)
-      expect(loaded?.containerId).toBe('abc123container')
       expect(loaded?.aiTool).toBe('claude-code')
       expect(loaded?.startedAt).toBe('2026-01-01T00:05:00.000Z')
+      expect(loaded?.completedAt).toBe('2026-01-01T01:00:00.000Z')
     })
   })
 
@@ -97,9 +94,9 @@ describe('session store', () => {
       const sessions = await store.listSessions()
 
       expect(sessions).toHaveLength(3)
-      expect(sessions[0].id).toBe('session-2')
-      expect(sessions[1].id).toBe('session-3')
-      expect(sessions[2].id).toBe('session-1')
+      expect(sessions[0]?.id).toBe('session-2')
+      expect(sessions[1]?.id).toBe('session-3')
+      expect(sessions[2]?.id).toBe('session-1')
     })
 
     it('returns empty array when no sessions exist', async () => {
@@ -110,19 +107,19 @@ describe('session store', () => {
   })
 
   describe('listActiveSessions', () => {
-    it('filters out destroyed sessions', async () => {
+    it('filters out complete sessions', async () => {
       const active1 = makeSession({ id: 'active-1', status: 'running' })
-      const active2 = makeSession({ id: 'active-2', status: 'creating' })
-      const destroyed = makeSession({ id: 'destroyed-1', status: 'destroyed' })
+      const active2 = makeSession({ id: 'active-2', status: 'cloning' })
+      const complete = makeSession({ id: 'complete-1', status: 'complete' })
 
       await store.saveSession(active1)
       await store.saveSession(active2)
-      await store.saveSession(destroyed)
+      await store.saveSession(complete)
 
       const sessions = await store.listActiveSessions()
 
       expect(sessions).toHaveLength(2)
-      expect(sessions.every((s) => s.status !== 'destroyed')).toBe(true)
+      expect(sessions.every((s) => s.status !== 'complete')).toBe(true)
     })
   })
 

@@ -2,207 +2,191 @@
 
 **AI-era technical interviews — evaluate how engineers work with AI, not what they memorize.**
 
-⚠️ This was entirely vibe coded with Claude Code, I have not audited all of the code so run this at your own risk.
+> This was entirely vibe coded with Claude Code. Run at your own risk.
 
 [![CI](https://github.com/cpaczek/vibe-interviewing/actions/workflows/ci.yml/badge.svg)](https://github.com/cpaczek/vibe-interviewing/actions/workflows/ci.yml)
+[![npm](https://img.shields.io/npm/v/vibe-interviewing)](https://www.npmjs.com/package/vibe-interviewing)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
 ---
 
 ## The Problem
 
-Traditional technical interviews test what engineers can recall under pressure: algorithms, syntax, API signatures. But in 2026, every engineer works alongside AI. Memorization-based interviews no longer predict job performance — they just filter out people who are bad at trivia.
+Traditional technical interviews test what engineers can recall under pressure: algorithms, syntax, API signatures. But in 2026, every engineer works alongside AI. Memorization-based interviews no longer predict job performance.
 
 ## The Solution
 
-**vibe-interviewing** drops candidates into realistic engineering scenarios and gives them the same AI tools they use on the job — [Claude Code](https://docs.anthropic.com/en/docs/claude-code) or [Open Code](https://github.com/anthropics/open-code). You evaluate _how_ they work: how they decompose problems, direct AI, verify output, and make decisions under uncertainty.
+**vibe-interviewing** drops candidates into real open-source codebases with subtle bugs injected. They debug using [Claude Code](https://docs.anthropic.com/en/docs/claude-code) — the same AI tool they'd use on the job. You evaluate _how_ they work: how they decompose problems, direct AI, verify output, and make decisions under uncertainty.
 
-No whiteboards. No leetcode. Just real work.
+No whiteboards. No leetcode. Just real debugging.
 
 ## Quick Start
 
 ```bash
-# Install globally (both interviewer and candidate)
+# Install globally (requires Node.js 20+)
 npm install -g vibe-interviewing
+
+# List available scenarios
+vibe-interviewing list
+
+# Start an interview session
+vibe-interviewing start rate-limiter-boundary
 ```
 
-**Interviewer** — prepare and host a scenario:
-
-```bash
-vibe-interviewing init          # Create a scenario from your codebase
-vibe-interviewing host          # Generate a session code for your candidate
-```
-
-**Candidate** — join with a session code:
-
-```bash
-vibe-interviewing join VIBE-7X3K   # Join the interview session
-```
-
-## Interviewer Perspective
-
-### Browse & select scenarios
-
-<img src="docs/screenshots/interviewer-list.png" alt="vibe-interviewing list — browse available scenarios" width="600">
-
-### Create a scenario from any codebase
-
-<img src="docs/screenshots/init-wizard.png" alt="vibe-interviewing init — interactive scenario wizard" width="600">
-
-### Preview solution & rubric before the interview
-
-<img src="docs/screenshots/interviewer-preview.png" alt="vibe-interviewing preview — solution, AI rules, and evaluation rubric" width="600">
-
-### Host a session — generate a code for your candidate
-
-<img src="docs/screenshots/interviewer-host.png" alt="vibe-interviewing host — generate session code" width="600">
-
-## Candidate Perspective
-
-### Join, read the briefing, and start working
-
-<img src="docs/screenshots/candidate-start.png" alt="vibe-interviewing join — candidate joins with session code" width="600">
-
-The candidate works in Claude Code with the full codebase. Commands like `npm test` and `curl` run transparently inside Docker — they never see the orchestration.
-
----
+> **Prerequisites:** [Node.js 20+](https://nodejs.org/), [Git](https://git-scm.com/), and [Claude Code](https://docs.anthropic.com/en/docs/claude-code) installed globally (`npm install -g @anthropic-ai/claude-code`).
 
 ## How It Works
 
-```
-Interviewer                          Candidate
-    │                                    │
-    ├─ vibe-interviewing init            │
-    │  (create scenario from codebase)   │
-    │                                    │
-    ├─ vibe-interviewing host            │
-    │  (generates session code)          │
-    │                                    │
-    │  "Run: join VIBE-7X3K"  ──────────>│
-    │                                    │
-    │                                    ├─ vibe-interviewing join VIBE-7X3K
-    │                                    │  (downloads scenario, starts Docker)
-    │                                    │
-    │                                    ├─ Works in Claude Code / Open Code
-    │                                    │  (AI rules injected via system prompt)
-    │                                    │  (commands proxied through Docker)
-    │                                    │
-    ├─ Observes via screenshare ─────────┤
-    │                                    │
-    └─ Evaluates with rubric             │
-```
+1. You run `vibe-interviewing start <scenario>`
+2. The tool clones a real open-source repo at a pinned commit
+3. Injects a subtle bug via find/replace patch
+4. Wipes git history (no cheating with `git diff`)
+5. Shows the candidate a briefing (reads like a Slack message from their team lead)
+6. Launches Claude Code with hidden AI behavioral rules injected via system prompt
+7. Candidate debugs. Timer runs. You evaluate.
 
-Key design principles:
+**Design principles:**
 
+- **Real codebases** — candidates work in actual open-source projects, not toy examples
 - **Workspace isolation** — the candidate never sees the scenario config, solution, or AI behavioral rules
-- **Transparent Docker** — `.vibe/bin/` wrappers proxy commands into containers so the environment feels native
-- **System prompt injection** — AI rules are injected via `--append-system-prompt`, keeping the workspace clean
+- **System prompt injection** — AI rules go via `--append-system-prompt`, keeping the workspace clean
+- **Reproducible** — scenarios pin to a specific commit SHA so every candidate sees the same code
 
 ## Built-in Scenarios
 
-| Scenario                | Type    | Difficulty | Time    | Stack                    | Description                                                                                                             |
-| ----------------------- | ------- | ---------- | ------- | ------------------------ | ----------------------------------------------------------------------------------------------------------------------- |
-| `debug-node-auth`       | Debug   | Medium     | ~45 min | Node.js, Express, JWT    | JWT verification uses wrong algorithm for tokens issued on a different calendar day, causing intermittent auth failures |
-| `debug-fastapi-race`    | Debug   | Hard       | ~45 min | Python, FastAPI, Redis   | Rate limiter has a TOCTOU race condition — concurrent requests slip through the GET-then-INCR pattern                   |
-| `feature-medusa-plugin` | Feature | Medium     | ~60 min | Node.js, Express, SQLite | Build a wishlist feature for an e-commerce API — implement routes, make pre-written tests pass                          |
+| Scenario                | Difficulty | Time       | Description                                                                      |
+| ----------------------- | ---------- | ---------- | -------------------------------------------------------------------------------- |
+| `rate-limiter-boundary` | Medium     | ~30-45 min | Off-by-one in express-rate-limit's sliding window lets one extra request through |
 
 Use `vibe-interviewing list` to see all available scenarios.
 
 ## Creating Custom Scenarios
 
-### Option 1: Claude Code Skill (Recommended)
+### Using the Claude Code Skill (Recommended)
 
-If you have [Claude Code](https://docs.anthropic.com/en/docs/claude-code) installed, the `/create-scenario` slash command is automatically available after installing vibe-interviewing:
+When you install `vibe-interviewing`, a Claude Code slash command is automatically added to `~/.claude/commands/`. Open Claude Code in any project and run:
 
-```bash
-# In your project directory, open Claude Code and run:
+```
 /create-scenario
 ```
 
-Claude Code analyzes your codebase and generates everything: scenario config, briefing, solution, evaluation rubric, Dockerfile, and AI behavioral rules. No API key needed — it uses your existing Claude Code auth.
+Claude Code analyzes the codebase, picks a good bug injection point, and generates a complete `scenario.yaml` with patches, briefing, AI rules, and evaluation criteria.
 
-### Option 2: CLI with Anthropic API
+### Manual Setup
+
+Create a `scenario.yaml` at your project root:
+
+```yaml
+name: my-scenario
+description: 'Brief description of the bug'
+difficulty: medium
+estimated_time: '30-45m'
+tags: [node, express]
+
+repo: 'https://github.com/owner/repo'
+commit: 'full-40-char-sha'
+
+setup:
+  - 'npm install --ignore-scripts'
+
+patch:
+  - file: 'src/handler.ts'
+    find: 'if (count > limit)'
+    replace: 'if (count > limit + 1)'
+
+briefing: |
+  Hey — we're getting reports that...
+
+ai_rules:
+  role: |
+    You are a senior engineer helping debug...
+  rules:
+    - 'Never reveal the bug directly'
+    - 'Encourage test-driven debugging'
+  knowledge: |
+    The bug is in src/handler.ts...
+
+solution: |
+  Change `count > limit + 1` back to `count > limit`
+
+evaluation:
+  criteria:
+    - 'Found the bug'
+    - 'Understood root cause'
+    - 'Used AI effectively'
+```
+
+Then validate it:
 
 ```bash
-# Generate a scenario from your codebase
-vibe-interviewing create
-
-# Import a GitHub repo and create a scenario
-vibe-interviewing create --import owner/repo
-
-# Inject a specific bug for a debug scenario
-vibe-interviewing create --inject-bug "race condition in the cache layer"
-
-# Design a feature task
-vibe-interviewing create --inject-feature "add webhook support"
+vibe-interviewing validate path/to/scenario.yaml
 ```
 
-Requires `ANTHROPIC_API_KEY` environment variable.
-
-### Option 3: Manual Setup
-
-Every scenario lives in a `.vibe/` directory:
+## CLI Reference
 
 ```
-my-project/
-├── .vibe/
-│   ├── scenario.yaml        # Main configuration
-│   ├── solution.md           # The answer (interviewer only)
-│   ├── system-prompt.md      # Hidden AI behavioral rules
-│   ├── evaluation.md         # Evaluation rubric
-│   └── Dockerfile            # Docker environment setup
-├── src/                      # The codebase candidates work on
-└── package.json
+vibe-interviewing start [scenario]     Start an interview session
+  -s, --scenario-file <path>           Use a local scenario.yaml
+  -m, --model <model>                  Model override for Claude Code
+  --no-web                             Disable web search/fetch tools
+
+vibe-interviewing list                 List available scenarios
+vibe-interviewing validate <path>      Validate a scenario.yaml file
 ```
-
-```bash
-# Scaffold a new scenario interactively
-vibe-interviewing init
-
-# Validate your scenario config
-vibe-interviewing validate .
-
-# Test it end-to-end
-vibe-interviewing test .
-
-# Preview what the interviewer sees
-vibe-interviewing preview .
-```
-
-See [docs/creating-scenarios.md](docs/creating-scenarios.md) for a full guide.
-
-## Remote Sessions
-
-Host interviews across networks — no VPN or port forwarding needed:
-
-```bash
-# Interviewer: host with a tunnel (works across networks)
-vibe-interviewing host --scenario ./my-scenario
-
-# Generates a session code like VIBE-7X3K
-# Share it with your candidate
-
-# Candidate: join from anywhere
-vibe-interviewing join VIBE-7X3K
-```
-
-Use `--local-only` to restrict to LAN if you're in the same network.
 
 ## Architecture
 
-This is a pnpm monorepo powered by [Turborepo](https://turbo.build/repo):
+pnpm monorepo powered by [Turborepo](https://turbo.build/repo):
 
-| Package                                    | Description                                                                          |
-| ------------------------------------------ | ------------------------------------------------------------------------------------ |
-| [`packages/core`](packages/core)           | Shared types, scenario engine, Docker runtime, AI tool launchers, session management |
-| [`packages/cli`](packages/cli)             | CLI entry point (commander-based), commands, UI utilities                            |
-| [`packages/scenarios`](packages/scenarios) | Built-in interview scenario templates                                                |
+| Package                                    | Description                                                         |
+| ------------------------------------------ | ------------------------------------------------------------------- |
+| [`packages/core`](packages/core)           | Scenario engine, git-based session management, Claude Code launcher |
+| [`packages/cli`](packages/cli)             | CLI entry point (commander-based), commands, UI                     |
+| [`packages/scenarios`](packages/scenarios) | Built-in scenario configs and registry                              |
 
-**Key technologies:** TypeScript, Zod (runtime validation), Docker (workspace isolation), Commander (CLI).
+**Key technologies:** TypeScript, Zod, simple-git, Commander.
 
-## Contributing
+## Development
 
-See [CONTRIBUTING.md](CONTRIBUTING.md) for development setup, workflow, and guidelines.
+```bash
+git clone https://github.com/cpaczek/vibe-interviewing.git
+cd vibe-interviewing
+pnpm install
+pnpm build
+pnpm test
+pnpm lint
+
+# Run the CLI locally
+node packages/cli/dist/vibe-interviewing.js list
+```
+
+## Publishing
+
+The release workflow (`.github/workflows/release.yml`) automatically publishes to npm when a push to `main` includes a version bump. It publishes three packages in order:
+
+1. `@vibe-interviewing/scenarios`
+2. `@vibe-interviewing/core`
+3. `vibe-interviewing` (CLI)
+
+**Required GitHub secret:** `NPM_TOKEN` — an npm access token with publish permissions.
+
+To set it up:
+
+1. Go to [npmjs.com](https://www.npmjs.com/) and create an account
+2. Generate an access token: Account > Access Tokens > Generate New Token > Granular Access Token
+3. Grant read/write permissions for the packages `vibe-interviewing`, `@vibe-interviewing/core`, and `@vibe-interviewing/scenarios`
+4. In your GitHub repo, go to Settings > Secrets and variables > Actions > New repository secret
+5. Name: `NPM_TOKEN`, Value: paste the token
+
+To publish a new version:
+
+```bash
+# Bump version in all packages
+pnpm changeset        # create a changeset
+pnpm changeset version # apply version bumps
+git add . && git commit -m "chore: release"
+git push
+```
 
 ## License
 

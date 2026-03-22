@@ -14,15 +14,28 @@ export function showBanner(): void {
   console.log(banner)
 }
 
+/**
+ * Normalize briefing text: join lines within paragraphs so the terminal
+ * handles wrapping naturally, while preserving paragraph breaks.
+ */
+function normalizeBriefing(text: string): string {
+  return text
+    .split(/\n{2,}/)
+    .map((paragraph) => paragraph.replace(/\n/g, ' ').replace(/\s+/g, ' ').trim())
+    .filter(Boolean)
+    .join('\n\n')
+}
+
 export function showBriefing(
   name: string,
   difficulty: string,
   time: string,
   briefing: string,
 ): void {
-  const header = `${chalk.bold(`INTERVIEW SCENARIO: ${name}`)}\n${chalk.dim(`Difficulty: ${difficulty} | Time: ~${time}`)}`
+  const header = `${chalk.bold(name.toUpperCase())}\n${chalk.dim(`${difficulty} | ~${time}`)}`
+  const normalized = normalizeBriefing(briefing)
   const box = boxen(
-    `${header}\n\n${briefing}\n\n${chalk.dim('This briefing is saved in BRIEFING.md')}`,
+    `${header}\n\n${normalized}\n\n${chalk.dim('Briefing saved to BRIEFING.md in your workspace.')}`,
     {
       padding: 1,
       borderStyle: 'round',

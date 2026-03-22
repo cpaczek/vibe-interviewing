@@ -9,7 +9,7 @@ export async function selectScenario(scenarios: ScenarioInfo[]): Promise<Scenari
       const badge = s.builtIn ? ' [built-in]' : ''
       const description = s.config.description ?? s.config.briefing.split('\n')[0]?.trim()
       return {
-        name: `${s.config.name}${badge} — ${s.config.type}, ${s.config.difficulty}, ~${s.config.estimated_time}`,
+        name: `${s.config.name}${badge} — ${s.config.difficulty}, ~${s.config.estimated_time}`,
         value: s,
         description,
       }
