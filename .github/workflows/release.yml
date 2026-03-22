@@ -38,7 +38,6 @@ jobs:
         run: pnpm lint
 
       - name: Publish @vibe-interviewing/scenarios
-        continue-on-error: true
         working-directory: packages/scenarios
         run: |
           PACKAGE_NAME=$(node -p "require('./package.json').name")
@@ -47,15 +46,15 @@ jobs:
 
           if [ "$LOCAL_VERSION" != "$PUBLISHED_VERSION" ]; then
             echo "Publishing $PACKAGE_NAME@$LOCAL_VERSION (registry has $PUBLISHED_VERSION)"
-            npm publish --provenance --access public
+            pnpm publish --provenance --access public --no-git-checks
           else
             echo "Skipping $PACKAGE_NAME — version $LOCAL_VERSION already published"
           fi
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          NPM_CONFIG_PROVENANCE: true
 
       - name: Publish @vibe-interviewing/core
-        continue-on-error: true
         working-directory: packages/core
         run: |
           PACKAGE_NAME=$(node -p "require('./package.json').name")
@@ -64,15 +63,15 @@ jobs:
 
           if [ "$LOCAL_VERSION" != "$PUBLISHED_VERSION" ]; then
             echo "Publishing $PACKAGE_NAME@$LOCAL_VERSION (registry has $PUBLISHED_VERSION)"
-            npm publish --provenance --access public
+            pnpm publish --provenance --access public --no-git-checks
           else
             echo "Skipping $PACKAGE_NAME — version $LOCAL_VERSION already published"
           fi
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          NPM_CONFIG_PROVENANCE: true
 
       - name: Publish vibe-interviewing
-        continue-on-error: true
         working-directory: packages/cli
         run: |
           PACKAGE_NAME=$(node -p "require('./package.json').name")
@@ -81,9 +80,10 @@ jobs:
 
           if [ "$LOCAL_VERSION" != "$PUBLISHED_VERSION" ]; then
             echo "Publishing $PACKAGE_NAME@$LOCAL_VERSION (registry has $PUBLISHED_VERSION)"
-            npm publish --provenance --access public
+            pnpm publish --provenance --access public --no-git-checks
           else
             echo "Skipping $PACKAGE_NAME — version $LOCAL_VERSION already published"
           fi
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          NPM_CONFIG_PROVENANCE: true
