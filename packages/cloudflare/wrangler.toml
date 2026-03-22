@@ -2,9 +2,9 @@ name = "vibe-interviewing"
 main = "src/index.ts"
 compatibility_date = "2025-01-01"
 
-# Custom domain — configure in Cloudflare dashboard:
-# Workers & Pages > vibe-interviewing > Settings > Domains & Routes
-# Add custom domain: vibe-interviewing.iar.dev
+[[routes]]
+pattern = "vibe-interviewing.iar.dev"
+custom_domain = true
 
 # R2 bucket for session storage
 [[r2_buckets]]
