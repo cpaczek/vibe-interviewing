@@ -41,9 +41,7 @@ console.log(
   ),
 )
 console.log()
-console.log(
-  `${c.blue}ℹ${c.reset} Scenario: ${c.bold}patch-data-loss${c.reset} (hard, ~30-45 min)`,
-)
+console.log(`${c.blue}ℹ${c.reset} Scenario: ${c.bold}patch-data-loss${c.reset} (hard, ~30-45 min)`)
 console.log(`${c.green}✔${c.reset} Workspace ready`)
 console.log()
 console.log(`${c.blue}ℹ${c.reset} Serving on ${c.dim}192.168.1.42:54321${c.reset}`)

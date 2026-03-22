@@ -63,7 +63,9 @@ console.log(
 )
 
 console.log()
-console.log(`${c.green}?${c.reset} Ready to launch Claude Code? ${c.dim}›${c.reset} ${c.cyan}Yes${c.reset}`)
+console.log(
+  `${c.green}?${c.reset} Ready to launch Claude Code? ${c.dim}›${c.reset} ${c.cyan}Yes${c.reset}`,
+)
 console.log()
 console.log(`${c.blue}ℹ${c.reset} Launching ${c.bold}Claude Code${c.reset}...`)
 console.log(`${c.dim}Exit Claude Code when done. Your time is being tracked.${c.reset}`)
