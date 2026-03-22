@@ -88,6 +88,11 @@ export function useTerminalFlow(steps: FlowStep[] | null): TerminalFlowState {
           return
         }
         case 'command': {
+          // Auto-start the first command, wait for user input on subsequent ones
+          if (stepIndex === 0) {
+            setPhase('typing')
+            setCommandCharIndex(1)
+          }
           return
         }
         case 'select': {
