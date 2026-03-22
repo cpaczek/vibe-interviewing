@@ -30,6 +30,9 @@ No whiteboards. No leetcode. Just real engineering.
 # Install globally (requires Node.js 20+)
 npm install -g vibe-interviewing
 
+# Set up optional tools (Claude Code skill for creating scenarios)
+vibe-interviewing setup
+
 # List available scenarios
 vibe-interviewing list
 
@@ -117,7 +120,7 @@ The `-s` flag accepts both local file paths and URLs in all commands (`start`, `
 
 ### Using the Claude Code Skill (Recommended)
 
-When you install `vibe-interviewing`, a Claude Code slash command is automatically added to `~/.claude/commands/`. Open Claude Code in any project and run:
+Run `vibe-interviewing setup` to install the Claude Code slash command. Then open Claude Code in any project and run:
 
 ```
 /create-scenario
@@ -201,6 +204,9 @@ vibe-interviewing join <code>          Join a hosted session using a session cod
 
 vibe-interviewing list                 List available scenarios
 vibe-interviewing validate <path>      Validate a scenario.yaml file
+
+vibe-interviewing setup                Set up optional tools (Claude Code skills)
+vibe-interviewing update               Update to the latest version
 
 vibe-interviewing sessions list        List sessions (--all to include completed)
 vibe-interviewing sessions clean       Remove completed sessions (--dry-run to preview)

@@ -6,6 +6,9 @@
 # Install
 npm install -g vibe-interviewing
 
+# Set up optional tools (Claude Code skill for creating scenarios)
+vibe-interviewing setup
+
 # List available scenarios
 vibe-interviewing list
 
@@ -118,7 +121,7 @@ Focus on **how** the candidate works with AI, not what they have memorized:
 
 ### Using the Claude Code skill (recommended)
 
-Open Claude Code in any project and run:
+First, install the skill by running `vibe-interviewing setup`. Then open Claude Code in any project and run:
 
 ```
 /create-scenario

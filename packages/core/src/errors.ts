@@ -82,3 +82,13 @@ export class ScenarioFetchError extends VibeError {
     )
   }
 }
+
+export class UpdateError extends VibeError {
+  constructor(reason?: string) {
+    super(
+      `Failed to update${reason ? ` — ${reason}` : ''}`,
+      'UPDATE_FAILED',
+      'Try updating manually: npm install -g vibe-interviewing@latest',
+    )
+  }
+}

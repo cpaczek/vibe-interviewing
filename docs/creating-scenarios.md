@@ -4,9 +4,10 @@
 
 The fastest way to create a scenario:
 
-1. Open Claude Code in any project (or anywhere if using a GitHub URL)
-2. Run `/create-scenario`
-3. Follow the interactive guide
+1. Run `vibe-interviewing setup` to install the Claude Code skill
+2. Open Claude Code in any project (or anywhere if using a GitHub URL)
+3. Run `/create-scenario`
+4. Follow the interactive guide
 
 The skill analyzes the codebase, helps you design the challenge, and generates a complete `scenario.yaml`.
 

@@ -63,4 +63,5 @@ export {
   SessionNotFoundError,
   GitCloneError,
   SetupError,
+  UpdateError,
 } from './errors.js'
