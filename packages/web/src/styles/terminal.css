@@ -1,0 +1,362 @@
+/* ---- Terminal window ---- */
+.terminal {
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  overflow: hidden;
+  outline: none;
+}
+
+.terminal:focus {
+  border-color: var(--border-hover);
+}
+
+/* ---- Title bar — utilitarian, no mac dots ---- */
+.terminal-titlebar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 14px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  user-select: none;
+}
+
+.terminal-title {
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  color: var(--text-dim);
+  letter-spacing: 0.04em;
+}
+
+.terminal-status {
+  font-family: var(--font-mono);
+  font-size: 0.6rem;
+  color: var(--text-dim);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.terminal-status-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--green-dim);
+}
+
+.terminal-status-dot--idle {
+  background: var(--text-dim);
+}
+
+/* ---- Terminal body ---- */
+.terminal-body {
+  padding: 14px 16px;
+  min-height: 300px;
+  max-height: 480px;
+  overflow-y: auto;
+  font-family: var(--font-mono);
+  font-size: clamp(11px, 1.5vw, 13px);
+  line-height: 1.7;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) transparent;
+}
+
+.terminal-body::-webkit-scrollbar { width: 3px; }
+.terminal-body::-webkit-scrollbar-track { background: transparent; }
+.terminal-body::-webkit-scrollbar-thumb { background: var(--border); }
+
+/* ---- Lines ---- */
+.terminal-line {
+  white-space: pre-wrap;
+  word-break: break-word;
+  min-height: 1.7em;
+}
+
+.terminal-line--empty {
+  min-height: 0.85em;
+}
+
+/* ---- Colors ---- */
+.t-accent { color: var(--accent); }
+.t-green { color: var(--green); }
+.t-yellow { color: var(--yellow); }
+.t-red { color: var(--red); }
+.t-dim { color: var(--text-muted); opacity: 0.6; }
+.t-bold { color: var(--white); font-weight: 600; }
+.t-white { color: var(--white); }
+.t-muted { color: var(--text-muted); }
+
+/* ---- Cursor ---- */
+.terminal-cursor {
+  display: inline-block;
+  width: 7px;
+  height: 1.15em;
+  background: var(--accent);
+  vertical-align: text-bottom;
+  margin-left: 1px;
+  animation: cursor-blink 1s step-end infinite;
+}
+
+@keyframes cursor-blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
+/* ---- Prompt (clickable idle state) ---- */
+.terminal-prompt-idle {
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 0;
+}
+
+.terminal-prompt-idle:hover .terminal-cursor {
+  background: var(--white);
+}
+
+.terminal-prompt-idle .terminal-hint {
+  font-size: 0.6rem;
+  color: var(--text-dim);
+  margin-left: 12px;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+}
+
+.terminal-prompt-idle:hover .terminal-hint {
+  opacity: 1;
+}
+
+/* ---- Command being typed ---- */
+.terminal-command {
+  white-space: pre-wrap;
+}
+
+.terminal-prompt-symbol {
+  color: var(--accent-dim);
+}
+
+/* ---- Spinner ---- */
+.terminal-spinner {
+  color: var(--accent);
+}
+
+/* ---- Select (interactive) ---- */
+.terminal-select {
+  padding: 4px 0;
+}
+
+.terminal-select-prompt {
+  margin-bottom: 4px;
+}
+
+.terminal-select-option {
+  padding: 3px 0 3px 2ch;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: color 0.1s ease;
+  user-select: none;
+}
+
+.terminal-select-option:hover {
+  color: var(--white);
+}
+
+.terminal-select-option--highlighted {
+  color: var(--accent);
+  padding-left: 0;
+}
+
+.terminal-select-option--highlighted::before {
+  content: '› ';
+  color: var(--accent);
+}
+
+/* ---- Confirm (interactive) ---- */
+.terminal-confirm {
+  white-space: pre-wrap;
+}
+
+.terminal-confirm-btn {
+  display: inline-block;
+  font-family: var(--font-mono);
+  font-size: inherit;
+  background: none;
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+  padding: 1px 8px;
+  margin-left: 4px;
+  cursor: pointer;
+  transition: all 0.1s ease;
+}
+
+.terminal-confirm-btn:hover {
+  border-color: var(--accent-dim);
+  color: var(--accent);
+}
+
+.terminal-confirm-btn:first-of-type {
+  margin-left: 8px;
+}
+
+/* ---- Flow picker (inside terminal) ---- */
+.terminal-flow-picker {
+  padding: 8px 0;
+}
+
+.terminal-flow-option {
+  display: block;
+  padding: 6px 0 6px 2ch;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: color 0.1s ease;
+  user-select: none;
+  font-family: var(--font-mono);
+  font-size: inherit;
+  background: none;
+  border: none;
+  text-align: left;
+  width: 100%;
+}
+
+.terminal-flow-option:hover,
+.terminal-flow-option--highlighted {
+  color: var(--white);
+}
+
+.terminal-flow-option:hover::before,
+.terminal-flow-option--highlighted::before {
+  content: '› ';
+  color: var(--accent);
+  margin-left: -2ch;
+}
+
+/* ---- Key hints ---- */
+.terminal-key-hint {
+  font-size: 0.6rem;
+  color: var(--text-dim);
+  letter-spacing: 0.02em;
+}
+
+/* ---- Install CTA ---- */
+.install-cta {
+  margin-top: 24px;
+  border: 1px solid var(--border);
+  padding: 24px;
+  background: var(--bg-elevated);
+}
+
+.install-cta-heading {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  color: var(--text);
+  margin-bottom: 4px;
+  font-weight: 400;
+}
+
+.install-cta-sub {
+  font-size: 0.75rem;
+  color: var(--text-dim);
+  margin-bottom: 16px;
+}
+
+.install-command {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  padding: 8px 12px;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  color: var(--text);
+  margin-bottom: 16px;
+}
+
+.install-command code {
+  color: var(--accent);
+}
+
+.install-command-copy {
+  background: none;
+  border: none;
+  color: var(--text-dim);
+  cursor: pointer;
+  padding: 0;
+  display: flex;
+  transition: color 0.15s ease;
+}
+
+.install-command-copy:hover {
+  color: var(--accent);
+}
+
+.install-command-copy svg {
+  width: 13px;
+  height: 13px;
+}
+
+.install-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.install-btn {
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  padding: 6px 14px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  letter-spacing: 0.02em;
+}
+
+.install-btn--primary {
+  background: var(--accent);
+  color: var(--bg);
+  border: 1px solid var(--accent);
+  font-weight: 500;
+}
+
+.install-btn--primary:hover {
+  background: var(--accent-dim);
+  border-color: var(--accent-dim);
+}
+
+.install-btn--ghost {
+  background: transparent;
+  color: var(--text-muted);
+  border: 1px solid var(--border);
+}
+
+.install-btn--ghost:hover {
+  border-color: var(--border-hover);
+  color: var(--text);
+}
+
+/* ---- Responsive ---- */
+@media (max-width: 768px) {
+  .terminal-body {
+    padding: 12px;
+    max-height: 400px;
+    min-height: 260px;
+  }
+
+  .install-cta {
+    padding: 18px 14px;
+  }
+}
+
+@media (max-width: 480px) {
+  .terminal-body {
+    padding: 10px;
+    max-height: 360px;
+    font-size: 11px;
+  }
+
+  .install-command {
+    font-size: 0.65rem;
+  }
+}

@@ -9,7 +9,7 @@ import type { ProgressCallback } from '../session/manager.js'
 import type { DownloadedSession } from './client.js'
 
 /** Default Cloudflare Worker URL */
-export const DEFAULT_WORKER_URL = 'https://vibe-interviewing.iar.dev'
+export const DEFAULT_WORKER_URL = 'https://api.vibe-interviewing.iar.dev'
 
 /** Get the configured worker URL (env override or default) */
 export function getWorkerUrl(): string {

@@ -3,7 +3,7 @@ main = "src/index.ts"
 compatibility_date = "2025-01-01"
 
 [[routes]]
-pattern = "vibe-interviewing.iar.dev"
+pattern = "api.vibe-interviewing.iar.dev"
 custom_domain = true
 
 # R2 bucket for session storage

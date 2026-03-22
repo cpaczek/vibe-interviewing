@@ -30,7 +30,7 @@ export function registerHostCommand(program: Command): void {
     .option('-s, --scenario-file <path>', 'Path to a local scenario.yaml file')
     .option('-p, --port <port>', 'Port to serve on (LAN mode only, default: random)')
     .option('--local', 'Use LAN mode (direct HTTP) instead of cloud hosting')
-    .option('--worker-url <url>', 'Cloud relay URL (default: vibe-interviewing.iar.dev)')
+    .option('--worker-url <url>', 'Cloud relay URL (default: api.vibe-interviewing.iar.dev)')
     .action(
       async (
         scenarioName: string | undefined,
