@@ -1,5 +1,6 @@
 name: rate-limiter-boundary
-description: "Off-by-one in express-rate-limit's sliding window lets one extra request through"
+description: 'Rate limiter allows requests beyond the configured limit'
+type: debug
 difficulty: medium
 estimated_time: '30-45m'
 tags:
@@ -7,7 +8,6 @@ tags:
   - express
   - middleware
   - rate-limiting
-  - off-by-one
 
 repo: 'https://github.com/express-rate-limit/express-rate-limit'
 commit: '4e8b18bf972eff2890ed67bd11d8a08a2c6502d5'
@@ -20,27 +20,28 @@ patch:
     find: 'if (totalHits > limit) {'
     replace: 'if (totalHits > limit + 1) {'
 
+delete_files:
+  - 'test'
+
 briefing: |
   Hey — we're getting reports from a few customers that our rate limiting isn't working correctly. They're saying they can make one more request than the configured limit before getting a 429.
 
   For example, if the limit is set to 5, clients can make 6 successful requests before being blocked. It's not a huge deal but it's inconsistent and a couple of enterprise customers have flagged it in their security audits.
 
-  We're using express-rate-limit. I've already cloned the repo and set it up locally — can you dig into the source and figure out what's going on?
+  We're using express-rate-limit. I've already cloned the repo and set it up locally. The main source is in `source/`.
 
-  To run the tests: `npx jest --no-coverage`
-
-  The main source is in `source/` and tests are in `test/library/`. Good luck!
+  Try writing a quick test or script to reproduce the boundary issue, then trace through the middleware logic to find the root cause. Good luck!
 
 ai_rules:
   role: |
-    You are a senior engineer helping a candidate debug an off-by-one error
+    You are a senior engineer helping a candidate debug a rate limiting issue
     in the express-rate-limit middleware. Act as a patient but not overly
     helpful colleague — you're available for questions but you don't
     volunteer the answer.
   rules:
     - 'Never reveal the exact location or nature of the bug directly'
     - 'If asked, confirm whether the candidate is looking in the right area'
-    - 'Encourage the candidate to write or run tests to reproduce the issue'
+    - 'Encourage the candidate to write a test or script to reproduce the issue'
     - 'If the candidate is stuck for more than 10 minutes, suggest looking at where totalHits is compared to the limit'
     - 'Praise good debugging methodology (reading tests, adding logging, bisecting)'
   knowledge: |
@@ -63,7 +64,7 @@ evaluation:
   criteria:
     - 'Identified the bug location in source/rate-limit.ts'
     - 'Understood the off-by-one nature of the bug'
-    - 'Used tests or manual testing to reproduce the issue'
+    - 'Wrote a test or script to reproduce the issue'
     - 'Applied the correct fix'
     - 'Used AI effectively as a debugging partner'
   expected_fix: 'Change `totalHits > limit + 1` back to `totalHits > limit`'

@@ -50,8 +50,25 @@ export function validateScenario(config: ScenarioConfig): ValidationResult {
     warnings.push('ai_rules.rules is empty — the AI will have no behavioral constraints')
   }
 
-  if (!config.solution.trim()) {
-    warnings.push('solution is empty — interviewers will have no solution reference')
+  // Type-specific validation
+  if (config.type === 'debug') {
+    if (config.patch.length === 0) {
+      warnings.push('debug scenario has no patches — a bug must be injected via patch')
+    }
+    if (!config.solution?.trim()) {
+      warnings.push('solution is empty — interviewers will have no solution reference')
+    }
+  }
+
+  if (config.type === 'feature') {
+    const hasCriteria =
+      (config.acceptance_criteria && config.acceptance_criteria.length > 0) ||
+      (config.evaluation && config.evaluation.criteria.length > 0)
+    if (!hasCriteria) {
+      warnings.push(
+        'feature scenario has no acceptance_criteria or evaluation.criteria — candidates need a definition of done',
+      )
+    }
   }
 
   if (!config.evaluation) {

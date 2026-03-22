@@ -26,12 +26,17 @@ const PatchSchema = z.object({
   replace: z.string(),
 })
 
+/** Scenario type — determines validation rules and system prompt context */
+const ScenarioTypeSchema = z.enum(['debug', 'feature', 'refactor']).default('debug')
+
 /** Full scenario configuration schema */
 export const ScenarioConfigSchema = z.object({
   /** Scenario display name */
   name: z.string(),
-  /** One-line description */
+  /** One-line description (candidate-visible — describe symptoms/task, never the root cause or solution) */
   description: z.string(),
+  /** Scenario type: debug (find a bug), feature (build something), refactor (improve code) */
+  type: ScenarioTypeSchema,
   /** Difficulty level */
   difficulty: z.enum(['easy', 'medium', 'hard']),
   /** Estimated time (e.g., "30-45m") */
@@ -48,13 +53,17 @@ export const ScenarioConfigSchema = z.object({
 
   /** Find-and-replace patches to inject the bug after cloning */
   patch: z.array(PatchSchema).default([]),
+  /** Files or directories to delete after cloning (globs relative to repo root) */
+  delete_files: z.array(z.string()).default([]),
 
   /** Briefing shown to the candidate (written like a team lead message) */
   briefing: z.string(),
   /** AI behavioral rules (injected via system prompt, hidden from candidate) */
   ai_rules: AIRulesSchema,
-  /** Interviewer reference — what the fix looks like */
-  solution: z.string(),
+  /** Interviewer reference — what the fix/implementation looks like */
+  solution: z.string().optional(),
+  /** Acceptance criteria for feature scenarios (concrete, testable requirements) */
+  acceptance_criteria: z.array(z.string()).optional(),
 
   /** Evaluation rubric */
   evaluation: EvaluationSchema.optional(),
@@ -63,6 +72,7 @@ export const ScenarioConfigSchema = z.object({
 })
 
 export type ScenarioConfig = z.infer<typeof ScenarioConfigSchema>
+export type ScenarioType = z.infer<typeof ScenarioTypeSchema>
 export type AIRules = z.infer<typeof AIRulesSchema>
 export type Evaluation = z.infer<typeof EvaluationSchema>
 

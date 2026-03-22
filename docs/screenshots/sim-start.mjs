@@ -44,7 +44,7 @@ console.log()
 console.log(
   `${c.blue}ℹ${c.reset} Scenario: ${c.bold}rate-limiter-boundary${c.reset} (medium, ~30-45 min)`,
 )
-console.log(`${c.blue}ℹ${c.reset} Off-by-one in express-rate-limit's sliding window`)
+console.log(`${c.blue}ℹ${c.reset} Rate limiter allows requests beyond the configured limit`)
 console.log()
 console.log(`${c.green}✔${c.reset} Workspace ready`)
 console.log()

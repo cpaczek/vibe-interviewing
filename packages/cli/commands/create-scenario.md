@@ -1,6 +1,6 @@
 # Create Interview Scenario
 
-You are creating an interview scenario for **vibe-interviewing**, a platform that evaluates how engineers work with AI tools. Scenarios are real open-source codebases with subtle bugs injected via find/replace patches. Candidates clone the repo, read a briefing, and debug with Claude Code.
+You are creating an interview scenario for **vibe-interviewing**, a platform that evaluates how engineers work with AI tools. Scenarios drop candidates into real open-source codebases with tasks that mirror actual engineering work — debugging bugs, building features, or refactoring code.
 
 ## Step 1: Analyze the Codebase
 
@@ -9,22 +9,27 @@ Explore the current project. Understand:
 - Language, framework, and project structure
 - Test framework and how to run tests
 - Key source files and their purpose
-- Good areas for realistic bug injection (boundary conditions, async logic, error handling, caching)
+- Good areas for scenario tasks (boundary conditions, feature extension points, code that needs improvement)
 
 ## Step 2: Ask the Interviewer
 
-Ask TWO questions:
+Ask THREE questions:
 
-1. **What area should the bug target?** (optional — e.g., "authentication", "database queries", "API validation", or "surprise me")
-2. **What difficulty level?** (easy / medium / hard)
+1. **What type of scenario?** (debug / feature / refactor)
+   - **debug** — inject a subtle bug for the candidate to find and fix
+   - **feature** — have the candidate build a new feature from a spec
+   - **refactor** — have the candidate improve existing code quality, performance, or structure
+2. **What area should it target?** (optional — e.g., "authentication", "database queries", "API validation", or "surprise me")
+3. **What difficulty level?** (easy / medium / hard)
 
 Wait for their answers before proceeding.
 
-## Step 3: Design the Bug
+## Step 3: Design the Scenario
+
+### For `debug` scenarios
 
 Choose a subtle, realistic bug. Good bugs:
 
-- Off-by-one errors in boundary conditions
 - Wrong comparison operator (`<` vs `<=`, `>` vs `>=`)
 - Incorrect default value or missing edge case
 - Race condition or timing issue
@@ -34,9 +39,42 @@ Choose a subtle, realistic bug. Good bugs:
 The bug should:
 
 - Be 1-3 lines of change (a find/replace patch)
-- Cause 1-3 existing tests to fail (or add a failing test if needed)
+- Be reproducible by writing a quick test or script
 - Take a competent engineer with AI ~30-45 minutes to find
 - Look like a plausible mistake, not sabotage
+- Use `delete_files` to remove any existing tests that would immediately reveal the bug
+
+### For `feature` scenarios
+
+Design a realistic feature request. Good features:
+
+- Add a new API endpoint with validation and tests
+- Implement a new module that integrates with existing code
+- Add a configuration option that affects behavior
+- Build a CLI command or UI component
+
+The feature should:
+
+- Be scoped to complete in 30-60 minutes with AI
+- Have clear acceptance criteria (3-5 testable requirements)
+- Build on existing patterns in the codebase
+- Require understanding the existing code, not just greenfield work
+
+### For `refactor` scenarios
+
+Identify code that genuinely needs improvement. Good refactors:
+
+- Duplicated logic that should be extracted
+- Performance bottleneck with a clear fix
+- Poor separation of concerns
+- Missing error handling or test coverage
+- Complex function that should be decomposed
+
+The refactor should:
+
+- Have a clear "before" state the candidate can observe
+- Be completable in 30-45 minutes with AI
+- Require the candidate to understand why the code is structured as it is
 
 ## Step 4: Get the Commit SHA
 
@@ -50,11 +88,12 @@ This SHA will be pinned in the scenario config for reproducibility.
 
 ## Step 5: Create `scenario.yaml`
 
-Create a `scenario.yaml` file at the project root with this exact schema:
+Create a `scenario.yaml` file at the project root with this schema:
 
 ```yaml
 name: 'short-kebab-case-name'
-description: 'One-line description of the bug'
+description: 'One-line description of the TASK, not the answer'
+type: debug # debug | feature | refactor
 difficulty: medium # easy | medium | hard
 estimated_time: '30-45m'
 tags:
@@ -68,77 +107,121 @@ commit: 'full-40-char-sha'
 setup:
   - 'npm install' # or pip install, cargo build, etc.
 
+# For debug scenarios: patches that inject the bug
+# For feature/refactor: patches to set up initial state (optional)
 patch:
   - file: 'path/to/file.ts'
     find: 'original code to find'
-    replace: 'modified code with bug'
+    replace: 'modified code with bug or starting state'
+
+# Files or directories to remove from the workspace (e.g., tests that reveal the bug)
+delete_files:
+  - 'test'
 
 briefing: |
-  Write this as if you're a team lead messaging the candidate on Slack.
-  Include:
-  - Context about what the project does
-  - What's going wrong (symptoms, not cause)
+  Write this as a real message from a team lead. Include:
+  - Context about the project
+  - For debug: symptoms (NOT the root cause)
+  - For feature: what to build and why
+  - For refactor: what needs improving and why it matters
   - How to run the app and tests
-  - Any relevant files or endpoints to start with
+  - Relevant files or areas to start with
 
 ai_rules:
   role: |
-    You are a senior engineer helping a candidate debug a bug.
+    You are a senior engineer helping a candidate.
     Act as a patient but not overly helpful colleague.
   rules:
-    - 'Never reveal the exact location or nature of the bug directly'
+    - 'Never reveal the exact answer directly'
     - 'If asked, confirm whether the candidate is looking in the right area'
-    - 'Encourage the candidate to write or run tests to reproduce the issue'
+    - 'Encourage writing or running tests'
     - 'If stuck for 10+ minutes, offer a directional hint'
-    - 'Praise good debugging methodology'
+    - 'Praise good methodology'
   knowledge: |
-    Detailed description of the bug: file, line, what was changed,
-    and what the fix is. This is hidden from the candidate.
+    Detailed context the AI knows but must not reveal directly.
+    For debug: the bug location and fix.
+    For feature: the ideal implementation approach.
+    For refactor: the key improvements to make.
 
+# Optional for feature/refactor, recommended for debug
 solution: |
-  Describe the exact fix with file path and code change.
+  Describe the expected outcome with file paths and code changes.
+
+# For feature scenarios: concrete, testable requirements
+acceptance_criteria:
+  - 'Requirement 1'
+  - 'Requirement 2'
 
 evaluation:
   criteria:
-    - 'Identified the bug location'
-    - 'Understood the root cause'
-    - 'Used tests to reproduce and verify'
-    - 'Applied the correct fix'
-    - 'Used AI effectively as a debugging partner'
-  expected_fix: 'One-line description of the fix'
+    - 'Evaluation point 1'
+    - 'Evaluation point 2'
+    - 'Used AI effectively as a partner'
+  expected_fix: 'One-line description of the expected outcome'
 
 license: MIT # license of the original project
 ```
 
-## Step 6: Verify the Patch
+## Step 6: Verify the Scenario
+
+### For debug scenarios
 
 Apply the patch manually and confirm:
 
 1. The `find` string exists exactly once in the target file
-2. After replacement, 1-3 tests fail as expected
-3. The failure message is debuggable (not cryptic)
+2. The bug is reproducible (write a quick test or script to verify)
+3. If the repo has tests that would reveal the bug, add those paths to `delete_files`
 
 ```bash
 # Test the patch
 grep -c 'find string' path/to/file.ts  # should be 1
-sed 's/find string/replace string/' path/to/file.ts > /tmp/patched.ts
-# Run tests to see failures
 ```
+
+### For feature scenarios
+
+Confirm:
+
+1. The briefing clearly describes what to build
+2. Acceptance criteria are testable
+3. The codebase has the right extension points
+
+### For refactor scenarios
+
+Confirm:
+
+1. The code issues are real and observable
+2. The improvement is meaningful, not cosmetic
+3. Tests exist or can be written to verify the refactor
 
 ## Step 7: Summary
 
 Tell the interviewer:
 
-1. What scenario was created and where the bug is
-2. Which tests will fail and why
-3. How to register it: add an entry to `packages/scenarios/registry.yaml`
-4. How to test it: `vibe-interviewing start <name>`
+1. What scenario was created and its type
+2. For debug: how to reproduce the bug and what the fix is
+3. For feature: the acceptance criteria
+4. For refactor: the expected improvements
+5. How to host it: `vibe-interviewing host -s ./scenario.yaml`
+6. How the candidate joins: `vibe-interviewing join <code>`
 
 ## Important Guidelines
+
+**Candidate-visible fields** — these MUST NOT reveal the answer:
+
+- `description` — describe the task or observable problem, never the root cause or implementation details
+- `briefing` — describe symptoms (debug), requirements (feature), or improvement goals (refactor)
+- `tags` — use technology tags, never bug-type or solution-hint tags
+
+**Interviewer-only fields** — these are hidden from candidates:
+
+- `ai_rules.knowledge` — detailed answer information
+- `solution` — exact fix or implementation
+- `evaluation` — grading rubric
+
+**Other rules:**
 
 - The briefing must read like a **real message from a real person** — no formal documentation style
 - The `find` string in patches must be unique in the file (otherwise the wrong occurrence might be replaced)
 - Always pin to a specific commit SHA, never a branch name
-- The bug should be in **application logic**, not configuration or build files
-- AI rules should prevent giving away the answer but still be genuinely helpful
-- Evaluation criteria should focus on **process** (how they debug) not just **outcome** (did they fix it)
+- AI rules should make the AI a helpful colleague, not an examiner
+- Evaluation criteria should focus on **process** (how they work) not just **outcome** (did they finish)

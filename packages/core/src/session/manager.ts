@@ -27,10 +27,11 @@ export class SessionManager {
    * Flow:
    * 1. Clone the repo at a pinned commit
    * 2. Apply bug patches (find/replace in source files)
-   * 3. Wipe git history so the candidate can't diff to find the bug
-   * 4. Remove scenario.yaml from workspace (interviewer-only)
-   * 5. Write BRIEFING.md and system prompt
-   * 6. Run setup commands (npm install, etc.)
+   * 3. Delete files excluded by the scenario (e.g., tests that reveal the bug)
+   * 4. Wipe git history so the candidate can't diff to find the bug
+   * 5. Remove scenario.yaml from workspace (interviewer-only)
+   * 6. Write BRIEFING.md and system prompt
+   * 7. Run setup commands (npm install, etc.)
    */
   async createSession(
     config: ScenarioConfig,
@@ -69,7 +70,15 @@ export class SessionManager {
       await writeFile(filePath, patched)
     }
 
-    // 3. Wipe git history so candidate can't see the injected changes
+    // 3. Delete files/directories specified by the scenario
+    if (config.delete_files.length > 0) {
+      onProgress?.('Removing excluded files...')
+      for (const target of config.delete_files) {
+        await rm(join(sessionDir, target), { recursive: true, force: true })
+      }
+    }
+
+    // 4. Wipe git history so candidate can't see the injected changes
     onProgress?.('Preparing workspace...')
     await rm(join(sessionDir, '.git'), { recursive: true, force: true })
     execSync(
@@ -77,10 +86,10 @@ export class SessionManager {
       { cwd: sessionDir, stdio: 'ignore' },
     )
 
-    // 4. Remove scenario.yaml from workspace (interviewer-only data)
+    // 5. Remove scenario.yaml from workspace (interviewer-only data)
     await rm(join(sessionDir, 'scenario.yaml'), { force: true })
 
-    // 5. Write BRIEFING.md
+    // 6. Write BRIEFING.md
     await writeFile(join(sessionDir, 'BRIEFING.md'), `# Interview Briefing\n\n${config.briefing}`)
 
     // Write system prompt OUTSIDE the workspace
@@ -90,7 +99,7 @@ export class SessionManager {
     await writeFile(systemPromptPath, generateSystemPrompt(config))
     session.systemPromptPath = systemPromptPath
 
-    // 6. Run setup commands (skip when hosting — candidate runs setup after download)
+    // 7. Run setup commands (skip when hosting — candidate runs setup after download)
     if (!options?.skipSetup) {
       session.status = 'setting-up'
       for (const cmd of config.setup) {

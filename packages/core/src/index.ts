@@ -2,6 +2,7 @@
 export {
   ScenarioConfigSchema,
   type ScenarioConfig,
+  type ScenarioType,
   type ScenarioInfo,
   type AIRules,
   type Evaluation,

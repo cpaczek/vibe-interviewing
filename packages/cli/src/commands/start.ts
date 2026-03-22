@@ -1,6 +1,7 @@
 import type { Command } from 'commander'
 import chalk from 'chalk'
 import { resolve } from 'node:path'
+import { execSync } from 'node:child_process'
 import {
   loadScenarioConfig,
   discoverAllScenarios,
@@ -110,6 +111,17 @@ export function registerStartCommand(program: Command): void {
             )
             console.log()
 
+            const openVscode = await confirmAction('Open workspace in VS Code?')
+            if (openVscode) {
+              try {
+                execSync(`code "${session.workdir}"`, { stdio: 'ignore' })
+                log.info('Opened VS Code.')
+              } catch {
+                log.warn('Could not open VS Code. Is `code` in your PATH?')
+              }
+            }
+
+            console.log()
             const ready = await confirmAction('Ready to launch Claude Code?')
             if (!ready) {
               log.info(`Workspace saved at: ${chalk.dim(session.workdir)}`)

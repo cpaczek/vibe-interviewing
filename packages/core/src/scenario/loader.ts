@@ -41,6 +41,20 @@ export function generateSystemPrompt(config: ScenarioConfig): string {
 
   lines.push(`# Interview Scenario: ${config.name}`)
   lines.push('')
+
+  // Type-specific context
+  const typeDescriptions: Record<string, string> = {
+    debug:
+      'The candidate is debugging a bug in this codebase. Guide them through the debugging process without revealing the answer.',
+    feature:
+      'The candidate is building a new feature. Help them understand the requirements, plan their approach, and implement it. Offer architectural guidance but let them drive the implementation.',
+    refactor:
+      'The candidate is improving existing code. Help them identify issues and plan improvements. Encourage them to explain their reasoning for changes.',
+  }
+  lines.push('## Scenario Type')
+  lines.push(typeDescriptions[config.type] ?? typeDescriptions['debug']!)
+  lines.push('')
+
   lines.push('## Your Role')
   lines.push(config.ai_rules.role.trim())
   lines.push('')
@@ -49,7 +63,13 @@ export function generateSystemPrompt(config: ScenarioConfig): string {
     lines.push(`- ${rule}`)
   }
   lines.push('')
-  lines.push('## Knowledge (DO NOT share directly with the candidate)')
+
+  const knowledgeHeaders: Record<string, string> = {
+    debug: 'Knowledge (DO NOT share directly with the candidate)',
+    feature: 'Implementation Context (DO NOT share directly with the candidate)',
+    refactor: 'Improvement Context (DO NOT share directly with the candidate)',
+  }
+  lines.push(`## ${knowledgeHeaders[config.type] ?? knowledgeHeaders['debug']!}`)
   lines.push(config.ai_rules.knowledge.trim())
 
   return lines.join('\n')

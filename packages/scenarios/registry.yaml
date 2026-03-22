@@ -1,6 +1,6 @@
 scenarios:
   - name: rate-limiter-boundary
-    description: "Off-by-one in express-rate-limit's sliding window lets one extra request through"
+    description: 'Rate limiter allows requests beyond the configured limit'
     difficulty: medium
     estimated_time: '30-45m'
     repo: 'https://github.com/express-rate-limit/express-rate-limit'

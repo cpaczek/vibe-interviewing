@@ -110,6 +110,17 @@ export function registerJoinCommand(program: Command): void {
             selectedTool = await selectAITool(tools)
           }
 
+          const openVscode = await confirmAction('Open workspace in VS Code?')
+          if (openVscode) {
+            try {
+              execSync(`code "${downloaded.workdir}"`, { stdio: 'ignore' })
+              log.info('Opened VS Code.')
+            } catch {
+              log.warn('Could not open VS Code. Is `code` in your PATH?')
+            }
+          }
+
+          console.log()
           const ready = await confirmAction('Ready to launch Claude Code?')
           if (!ready) {
             log.info(`Workspace saved at: ${chalk.dim(downloaded.workdir)}`)
@@ -144,6 +155,7 @@ export function registerJoinCommand(program: Command): void {
             {
               name: downloaded.metadata.scenarioName,
               description: '',
+              type: 'debug',
               difficulty,
               tags: [],
               estimated_time: downloaded.metadata.estimatedTime,
@@ -151,6 +163,7 @@ export function registerJoinCommand(program: Command): void {
               repo: '',
               commit: '',
               patch: [],
+              delete_files: [],
               setup: downloaded.metadata.setupCommands,
               ai_rules: { role: '', rules: [], knowledge: '' },
               solution: '',

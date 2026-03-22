@@ -8,13 +8,15 @@ describe('validator', () => {
     return {
       name: 'Test Scenario',
       description: 'A test debugging scenario',
+      type: 'debug',
       difficulty: 'medium',
       estimated_time: '30m',
       tags: [],
       repo: 'https://github.com/test/repo',
       commit: 'abc1234',
       setup: [],
-      patch: [],
+      patch: [{ file: 'src/app.ts', find: 'foo', replace: 'bar' }],
+      delete_files: [],
       briefing: 'Fix the broken endpoint',
       solution: 'Fix the auth middleware bug',
       ai_rules: {
@@ -103,11 +105,58 @@ describe('validator', () => {
       expect(result.warnings.some((w) => w.includes('rules'))).toBe(true)
     })
 
-    it('warns when solution is empty', () => {
-      const config = makeConfig({ solution: '  ' })
+    it('warns when debug scenario has empty solution', () => {
+      const config = makeConfig({ type: 'debug', solution: '  ' })
       const result = validateScenario(config)
 
       expect(result.warnings.some((w) => w.includes('solution'))).toBe(true)
+    })
+
+    it('warns when debug scenario has no patches', () => {
+      const config = makeConfig({ type: 'debug', patch: [] })
+      const result = validateScenario(config)
+
+      expect(result.warnings.some((w) => w.includes('debug scenario has no patches'))).toBe(true)
+    })
+
+    it('does not warn about patches for feature scenarios', () => {
+      const config = makeConfig({
+        type: 'feature',
+        patch: [],
+        acceptance_criteria: ['Build the thing'],
+      })
+      const result = validateScenario(config)
+
+      expect(result.warnings.some((w) => w.includes('patches'))).toBe(false)
+    })
+
+    it('does not warn about missing solution for feature scenarios', () => {
+      const config = makeConfig({
+        type: 'feature',
+        solution: undefined,
+        acceptance_criteria: ['Build it'],
+      })
+      const result = validateScenario(config)
+
+      expect(result.warnings.some((w) => w.includes('solution'))).toBe(false)
+    })
+
+    it('does not warn about patches for refactor scenarios', () => {
+      const config = makeConfig({ type: 'refactor', patch: [] })
+      const result = validateScenario(config)
+
+      expect(result.warnings.some((w) => w.includes('patches'))).toBe(false)
+    })
+
+    it('warns when feature scenario has no acceptance criteria or evaluation', () => {
+      const config = makeConfig({
+        type: 'feature',
+        acceptance_criteria: undefined,
+        evaluation: undefined,
+      })
+      const result = validateScenario(config)
+
+      expect(result.warnings.some((w) => w.includes('acceptance_criteria'))).toBe(true)
     })
 
     it('warns when no evaluation criteria defined', () => {

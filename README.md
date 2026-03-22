@@ -16,9 +16,9 @@ Traditional technical interviews test what engineers can recall under pressure: 
 
 ## The Solution
 
-**vibe-interviewing** drops candidates into real open-source codebases with subtle bugs injected. They debug using [Claude Code](https://docs.anthropic.com/en/docs/claude-code) — the same AI tool they'd use on the job. You evaluate _how_ they work: how they decompose problems, direct AI, verify output, and make decisions under uncertainty.
+**vibe-interviewing** drops candidates into real open-source codebases with tasks that mirror actual engineering work — debugging subtle bugs, building features from specs, or refactoring code for quality. They work using [Claude Code](https://docs.anthropic.com/en/docs/claude-code) — the same AI tool they'd use on the job. You evaluate _how_ they work: how they decompose problems, direct AI, verify output, and make decisions under uncertainty.
 
-No whiteboards. No leetcode. Just real debugging.
+No whiteboards. No leetcode. Just real engineering.
 
 ## Quick Start
 
@@ -85,9 +85,9 @@ The host prepares the workspace and serves it over HTTP on your local network. T
 
 ## Built-in Scenarios
 
-| Scenario                | Difficulty | Time       | Description                                                                      |
-| ----------------------- | ---------- | ---------- | -------------------------------------------------------------------------------- |
-| `rate-limiter-boundary` | Medium     | ~30-45 min | Off-by-one in express-rate-limit's sliding window lets one extra request through |
+| Scenario                | Type  | Difficulty | Time       | Description                                              |
+| ----------------------- | ----- | ---------- | ---------- | -------------------------------------------------------- |
+| `rate-limiter-boundary` | Debug | Medium     | ~30-45 min | Rate limiter allows requests beyond the configured limit |
 
 ![List scenarios](docs/screenshots/interviewer-list.png)
 
@@ -111,7 +111,8 @@ Create a `scenario.yaml` at your project root:
 
 ```yaml
 name: my-scenario
-description: 'Brief description of the bug'
+description: 'Brief description of the task (never reveal the answer here)'
+type: debug # debug | feature | refactor
 difficulty: medium
 estimated_time: '30-45m'
 tags: [node, express]
