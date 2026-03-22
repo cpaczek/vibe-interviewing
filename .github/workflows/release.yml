@@ -50,9 +50,6 @@ jobs:
           else
             echo "Skipping $PACKAGE_NAME — version $LOCAL_VERSION already published"
           fi
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-          NPM_CONFIG_PROVENANCE: true
 
       - name: Publish @vibe-interviewing/core
         working-directory: packages/core
@@ -67,9 +64,6 @@ jobs:
           else
             echo "Skipping $PACKAGE_NAME — version $LOCAL_VERSION already published"
           fi
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-          NPM_CONFIG_PROVENANCE: true
 
       - name: Publish vibe-interviewing
         working-directory: packages/cli
@@ -84,6 +78,3 @@ jobs:
           else
             echo "Skipping $PACKAGE_NAME — version $LOCAL_VERSION already published"
           fi
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-          NPM_CONFIG_PROVENANCE: true
