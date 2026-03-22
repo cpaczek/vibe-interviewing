@@ -3,6 +3,7 @@ import {
   VibeError,
   ScenarioNotFoundError,
   ScenarioValidationError,
+  ScenarioFetchError,
   AIToolNotFoundError,
   SessionNotFoundError,
   GitCloneError,
@@ -144,6 +145,34 @@ describe('GitCloneError', () => {
 
   it('is an instance of both VibeError and Error', () => {
     const err = new GitCloneError('https://github.com/test/repo')
+    expect(err).toBeInstanceOf(VibeError)
+    expect(err).toBeInstanceOf(Error)
+  })
+})
+
+describe('ScenarioFetchError', () => {
+  it('has correct code', () => {
+    const err = new ScenarioFetchError('https://example.com/scenario.yaml')
+    expect(err.code).toBe('SCENARIO_FETCH_FAILED')
+  })
+
+  it('includes the URL in message', () => {
+    const err = new ScenarioFetchError('https://example.com/scenario.yaml')
+    expect(err.message).toContain('https://example.com/scenario.yaml')
+  })
+
+  it('includes reason when provided', () => {
+    const err = new ScenarioFetchError('https://example.com/scenario.yaml', 'HTTP 404 Not Found')
+    expect(err.message).toContain('HTTP 404 Not Found')
+  })
+
+  it('has a helpful hint', () => {
+    const err = new ScenarioFetchError('https://example.com/scenario.yaml')
+    expect(err.hint).toContain('URL is accessible')
+  })
+
+  it('is an instance of both VibeError and Error', () => {
+    const err = new ScenarioFetchError('https://example.com/scenario.yaml')
     expect(err).toBeInstanceOf(VibeError)
     expect(err).toBeInstanceOf(Error)
   })

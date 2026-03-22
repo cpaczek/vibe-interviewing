@@ -197,6 +197,19 @@ evaluation:
     - 'Used AI effectively as a partner'
   expected_fix: 'One-line description of the expected outcome'
 
+# Structured guide for the interviewer (shown when hosting, never to the candidate)
+interviewer_guide:
+  overview: |
+    What this scenario evaluates and why. Summarize the key skills being tested.
+  key_signals:
+    - signal: 'Behavior to watch for'
+      positive: 'What a strong candidate does (green flag)'
+      negative: 'What a weak candidate does (red flag)'
+  common_pitfalls:
+    - 'Common mistake candidates make'
+  debrief_questions:
+    - 'Question to ask the candidate after the session'
+
 license: MIT # license of the original project
 ```
 
@@ -241,7 +254,8 @@ Tell the interviewer:
 4. For refactor: the expected improvements
 5. How to validate: `vibe-interviewing validate ./scenario.yaml`
 6. How to host it: `vibe-interviewing host -s ./scenario.yaml`
-7. How the candidate joins: `vibe-interviewing join <code>`
+7. How to share it: push the scenario.yaml to a GitHub repo or gist, then host with a URL: `vibe-interviewing host -s https://github.com/org/repo/blob/main/scenario.yaml`
+8. How the candidate joins: `vibe-interviewing join <code>`
 
 ## Important Guidelines
 
@@ -256,6 +270,7 @@ Tell the interviewer:
 - `ai_rules.knowledge` — detailed answer information
 - `solution` — exact fix or implementation
 - `evaluation` — grading rubric
+- `interviewer_guide` — structured guide with signals, pitfalls, and debrief questions
 
 **Other rules:**
 

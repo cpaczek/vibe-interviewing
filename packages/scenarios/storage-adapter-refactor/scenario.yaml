@@ -81,4 +81,38 @@ evaluation:
     - 'Made thoughtful design decisions about abstraction level'
     - 'Used AI effectively as an architecture partner'
 
+interviewer_guide:
+  overview: |
+    This scenario evaluates architectural thinking and incremental refactoring skills.
+    The candidate must decouple a tightly-coupled storage layer (lowdb) from the Service
+    class by introducing a clean interface. There is no single right answer — multiple
+    valid approaches exist. Focus on how the candidate reasons about abstraction boundaries,
+    makes trade-offs, and refactors incrementally without breaking existing behavior.
+  key_signals:
+    - signal: 'Identifies coupling points first'
+      positive: 'Maps out all places Service touches lowdb before writing any code'
+      negative: 'Starts coding the interface without understanding the existing dependencies'
+    - signal: 'Designs a minimal interface'
+      positive: 'Creates an interface with only the methods Service actually needs'
+      negative: 'Over-engineers with many generic methods, complex generics, or framework-like abstractions'
+    - signal: 'Refactors incrementally'
+      positive: 'Makes one change at a time and verifies the server still works after each step'
+      negative: 'Attempts a big-bang rewrite — changes everything at once and debugs the result'
+    - signal: 'Handles helper functions'
+      positive: 'Notices that embed/nullifyForeignKey/deleteDependents also access db.data and has a plan for them'
+      negative: 'Misses the helper functions entirely, leaving them broken after refactoring'
+    - signal: 'Uses AI as architecture partner'
+      positive: 'Discusses design trade-offs with AI, considers alternatives before committing'
+      negative: 'Asks AI to generate the entire refactoring without engaging in design decisions'
+  common_pitfalls:
+    - 'Over-engineering the interface with methods that are not needed (YAGNI violation)'
+    - 'Forgetting the helper functions (embed, nullifyForeignKey, deleteDependents) that also access db.data directly'
+    - 'Not verifying the server still works after refactoring — the server must pass the same curl tests'
+    - 'Creating a leaky abstraction where lowdb internals bleed through the interface'
+  debrief_questions:
+    - 'How did you decide what methods to put on the storage interface?'
+    - 'What trade-offs did you consider when designing the abstraction?'
+    - 'How did you handle the helper functions that also access the database directly?'
+    - 'If you had more time, what would you improve about your design?'
+
 license: MIT

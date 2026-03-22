@@ -95,6 +95,24 @@ The candidate downloads the workspace from the cloud, runs setup, and launches C
 
 Use `vibe-interviewing list` to see all available scenarios.
 
+## Interviewer Guide
+
+Each scenario includes a structured **interviewer guide** that is displayed when you host a session. It gives you context on what to evaluate, specific green/red flag behaviors to watch for, common candidate pitfalls, and debrief questions to ask afterward. The guide is never shown to the candidate.
+
+## Sharing Scenarios
+
+Share your custom scenarios by hosting the `scenario.yaml` anywhere accessible via URL:
+
+```bash
+# From a GitHub repo (blob URLs are auto-converted to raw)
+vibe-interviewing host -s https://github.com/your-org/scenarios/blob/main/scenario.yaml
+
+# From a GitHub gist
+vibe-interviewing host -s https://gist.githubusercontent.com/user/abc123/raw/scenario.yaml
+```
+
+The `-s` flag accepts both local file paths and URLs in all commands (`start`, `host`).
+
 ## Creating Custom Scenarios
 
 ### Using the Claude Code Skill (Recommended)
@@ -162,14 +180,14 @@ vibe-interviewing validate path/to/scenario.yaml
 
 ```
 vibe-interviewing start [scenario]     Start a local interview session
-  -s, --scenario-file <path>           Use a local scenario.yaml
+  -s, --scenario-file <path>           Path or URL to a scenario.yaml
   -w, --workdir <path>                 Custom workspace directory
   -t, --tool <name>                    AI tool to use (default: claude-code)
   -m, --model <model>                  Model override for Claude Code
   --no-web                             Disable web search/fetch tools
 
 vibe-interviewing host [scenario]      Host a session for a remote candidate
-  -s, --scenario-file <path>           Use a local scenario.yaml
+  -s, --scenario-file <path>           Path or URL to a scenario.yaml
   -p, --port <port>                    Port to serve on (LAN mode only)
   --local                              Use LAN mode instead of cloud hosting
   --worker-url <url>                   Custom cloud relay URL

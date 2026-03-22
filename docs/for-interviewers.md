@@ -59,9 +59,32 @@ This starts an HTTP server on your machine. You'll need to keep the terminal ope
 
 ### Using custom scenarios
 
+From a local file:
+
 ```bash
 vibe-interviewing host -s ./my-scenario.yaml
 ```
+
+From a URL (GitHub repos, gists, or any HTTP server):
+
+```bash
+vibe-interviewing host -s https://github.com/your-org/scenarios/blob/main/scenario.yaml
+```
+
+GitHub blob URLs are automatically converted to raw content URLs.
+
+## Interviewer Guide
+
+When you host a session, the CLI displays a structured **interviewer guide** (if the scenario includes one). This guide is only shown to you — the candidate never sees it.
+
+The guide includes:
+
+- **Overview** — what the scenario evaluates and why
+- **What to Watch For** — specific signals with green flags (strong candidate) and red flags (weak candidate)
+- **Common Pitfalls** — mistakes candidates frequently make
+- **Debrief Questions** — questions to ask after the session
+
+Use this as a reference during the interview, not a rigid checklist.
 
 ## What the Candidate Sees
 
@@ -71,7 +94,7 @@ vibe-interviewing host -s ./my-scenario.yaml
 4. Claude Code launches with hidden behavioral rules
 5. They work in a real codebase with AI as their partner
 
-The candidate **never** sees: the scenario config, the solution, the evaluation criteria, or the AI behavioral rules.
+The candidate **never** sees: the scenario config, the solution, the evaluation criteria, the interviewer guide, or the AI behavioral rules.
 
 ## What to Watch For
 

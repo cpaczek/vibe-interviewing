@@ -1,9 +1,9 @@
-import { describe, it, expect, afterEach } from 'vitest'
+import { describe, it, expect, afterEach, vi } from 'vitest'
 import { mkdtemp, writeFile, rm } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import { loadScenarioConfig, generateSystemPrompt } from './loader.js'
-import { ScenarioNotFoundError, ScenarioValidationError } from '../errors.js'
+import { loadScenarioConfig, generateSystemPrompt, isUrl } from './loader.js'
+import { ScenarioNotFoundError, ScenarioValidationError, ScenarioFetchError } from '../errors.js'
 import type { ScenarioConfig } from './types.js'
 
 describe('loader', () => {
@@ -68,6 +68,126 @@ ai_rules:
       await writeFile(configPath, 'name: Only Name\n')
 
       await expect(loadScenarioConfig(configPath)).rejects.toThrow(ScenarioValidationError)
+    })
+
+    it('parses a scenario with interviewer_guide', async () => {
+      const dir = await createTempDir()
+      const configPath = join(dir, 'scenario.yaml')
+      const yamlWithGuide =
+        validScenarioYaml +
+        `
+interviewer_guide:
+  overview: "Tests debugging skills"
+  key_signals:
+    - signal: "Reproduces first"
+      positive: "Uses curl to reproduce"
+      negative: "Jumps to code"
+  common_pitfalls:
+    - "Skips reproduction"
+  debrief_questions:
+    - "Walk me through your process"
+`
+      await writeFile(configPath, yamlWithGuide)
+
+      const config = await loadScenarioConfig(configPath)
+
+      expect(config.interviewer_guide).toBeDefined()
+      expect(config.interviewer_guide!.overview).toBe('Tests debugging skills')
+      expect(config.interviewer_guide!.key_signals).toHaveLength(1)
+      expect(config.interviewer_guide!.key_signals[0]!.signal).toBe('Reproduces first')
+      expect(config.interviewer_guide!.key_signals[0]!.positive).toBe('Uses curl to reproduce')
+      expect(config.interviewer_guide!.key_signals[0]!.negative).toBe('Jumps to code')
+      expect(config.interviewer_guide!.common_pitfalls).toEqual(['Skips reproduction'])
+      expect(config.interviewer_guide!.debrief_questions).toEqual(['Walk me through your process'])
+    })
+
+    it('parses a scenario without interviewer_guide (backward compat)', async () => {
+      const dir = await createTempDir()
+      const configPath = join(dir, 'scenario.yaml')
+      await writeFile(configPath, validScenarioYaml)
+
+      const config = await loadScenarioConfig(configPath)
+
+      expect(config.interviewer_guide).toBeUndefined()
+    })
+  })
+
+  describe('isUrl', () => {
+    it('returns true for https URLs', () => {
+      expect(isUrl('https://example.com/scenario.yaml')).toBe(true)
+    })
+
+    it('returns true for http URLs', () => {
+      expect(isUrl('http://example.com/scenario.yaml')).toBe(true)
+    })
+
+    it('returns false for file paths', () => {
+      expect(isUrl('/home/user/scenario.yaml')).toBe(false)
+      expect(isUrl('./scenario.yaml')).toBe(false)
+      expect(isUrl('scenario.yaml')).toBe(false)
+    })
+
+    it('returns false for empty string', () => {
+      expect(isUrl('')).toBe(false)
+    })
+  })
+
+  describe('loadScenarioConfig with URLs', () => {
+    afterEach(() => {
+      vi.restoreAllMocks()
+    })
+
+    it('fetches and parses a scenario from a URL', async () => {
+      vi.spyOn(globalThis, 'fetch').mockResolvedValue(
+        new Response(validScenarioYaml, { status: 200 }),
+      )
+
+      const config = await loadScenarioConfig('https://example.com/scenario.yaml')
+
+      expect(config.name).toBe('Test Scenario')
+      expect(config.difficulty).toBe('medium')
+      expect(globalThis.fetch).toHaveBeenCalledOnce()
+    })
+
+    it('converts GitHub blob URLs to raw URLs', async () => {
+      vi.spyOn(globalThis, 'fetch').mockResolvedValue(
+        new Response(validScenarioYaml, { status: 200 }),
+      )
+
+      await loadScenarioConfig('https://github.com/owner/repo/blob/main/scenario.yaml')
+
+      expect(globalThis.fetch).toHaveBeenCalledWith(
+        'https://raw.githubusercontent.com/owner/repo/main/scenario.yaml',
+        expect.objectContaining({}),
+      )
+    })
+
+    it('throws ScenarioFetchError on non-2xx response', async () => {
+      vi.spyOn(globalThis, 'fetch').mockResolvedValue(
+        new Response('Not Found', { status: 404, statusText: 'Not Found' }),
+      )
+
+      await expect(loadScenarioConfig('https://example.com/scenario.yaml')).rejects.toThrow(
+        ScenarioFetchError,
+      )
+    })
+
+    it('throws ScenarioFetchError on network error', async () => {
+      vi.spyOn(globalThis, 'fetch').mockRejectedValue(new Error('network error'))
+
+      await expect(loadScenarioConfig('https://example.com/scenario.yaml')).rejects.toThrow(
+        ScenarioFetchError,
+      )
+    })
+
+    it('throws ScenarioValidationError for invalid YAML from URL', async () => {
+      vi.spyOn(globalThis, 'fetch').mockResolvedValue(
+        new Response('name: Only Name\n', { status: 200 }),
+      )
+
+      await expect(loadScenarioConfig('https://example.com/scenario.yaml')).rejects.toThrow(
+        ScenarioValidationError,
+      )
     })
   })
 

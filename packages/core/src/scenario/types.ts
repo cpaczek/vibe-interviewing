@@ -16,6 +16,28 @@ const EvaluationSchema = z.object({
   expected_fix: z.string().optional(),
 })
 
+/** A signal to watch for during the interview, with green and red flag indicators */
+const KeySignalSchema = z.object({
+  /** What behavior or skill this signal measures */
+  signal: z.string(),
+  /** What a strong candidate does (green flag) */
+  positive: z.string(),
+  /** What a weak candidate does (red flag) */
+  negative: z.string(),
+})
+
+/** Structured guide for the interviewer — shown during hosting, never to the candidate */
+const InterviewerGuideSchema = z.object({
+  /** High-level summary of what this scenario evaluates and why */
+  overview: z.string(),
+  /** Specific behaviors to watch for, with green/red flag indicators */
+  key_signals: z.array(KeySignalSchema).default([]),
+  /** Common mistakes candidates make */
+  common_pitfalls: z.array(z.string()).default([]),
+  /** Questions to ask the candidate after the session */
+  debrief_questions: z.array(z.string()).default([]),
+})
+
 /** A file modification to inject the bug */
 const PatchSchema = z.object({
   /** Path to the file relative to repo root */
@@ -67,6 +89,8 @@ export const ScenarioConfigSchema = z.object({
 
   /** Evaluation rubric */
   evaluation: EvaluationSchema.optional(),
+  /** Structured interviewer guide — what to watch for, common pitfalls, debrief questions */
+  interviewer_guide: InterviewerGuideSchema.optional(),
   /** License of the original project */
   license: z.string().optional(),
 })
@@ -75,6 +99,8 @@ export type ScenarioConfig = z.infer<typeof ScenarioConfigSchema>
 export type ScenarioType = z.infer<typeof ScenarioTypeSchema>
 export type AIRules = z.infer<typeof AIRulesSchema>
 export type Evaluation = z.infer<typeof EvaluationSchema>
+export type InterviewerGuide = z.infer<typeof InterviewerGuideSchema>
+export type KeySignal = z.infer<typeof KeySignalSchema>
 
 /** Metadata about a discovered scenario */
 export interface ScenarioInfo {

@@ -3,8 +3,8 @@ import type { FlowStep } from '../flows/types'
 import { useTerminalFlow } from '../hooks/useTerminalFlow'
 import { TerminalLine } from './TerminalLine'
 import { InstallCTA } from './InstallCTA'
-import { intervieweeFlow } from '../flows/intervieweeFlow'
-import { interviewerFlow } from '../flows/interviewerFlow'
+import { intervieweeFlow, getIntervieweeFlow } from '../flows/intervieweeFlow'
+import { interviewerFlow, getInterviewerFlow } from '../flows/interviewerFlow'
 
 const FLOW_OPTIONS = ['interviewee', 'interviewer'] as const
 
@@ -45,6 +45,19 @@ export function Terminal(): React.JSX.Element {
     setFlow(f)
     setSteps(f === 'interviewer' ? interviewerFlow : intervieweeFlow)
   }, [])
+
+  // When a scenario is selected in the demo, regenerate flow with the correct scenario
+  const handleScenarioSelect = useCallback(
+    (index: number) => {
+      onSelectOption(index)
+      if (flow === 'interviewer') {
+        setSteps(getInterviewerFlow(index))
+      } else {
+        setSteps(getIntervieweeFlow(index))
+      }
+    },
+    [flow, onSelectOption],
+  )
 
   const handleReplay = useCallback(() => {
     setFlow(null)
@@ -100,7 +113,7 @@ export function Terminal(): React.JSX.Element {
           onSelectHighlight(Math.min(select.options.length - 1, select.highlighted + 1))
         } else if (e.key === 'Enter') {
           e.preventDefault()
-          onSelectOption(select.highlighted)
+          handleScenarioSelect(select.highlighted)
         }
         return
       }
@@ -134,7 +147,7 @@ export function Terminal(): React.JSX.Element {
       confirm,
       isComplete,
       onClickPrompt,
-      onSelectOption,
+      handleScenarioSelect,
       onSelectHighlight,
       onConfirm,
       handleFlowSelect,
@@ -187,7 +200,7 @@ export function Terminal(): React.JSX.Element {
                 <div
                   key={i}
                   className={`terminal-select-option${i === select.highlighted ? ' terminal-select-option--highlighted' : ''}`}
-                  onClick={() => onSelectOption(i)}
+                  onClick={() => handleScenarioSelect(i)}
                   onMouseEnter={() => onSelectHighlight(i)}
                 >
                   {opt}

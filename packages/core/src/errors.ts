@@ -72,3 +72,13 @@ export class SetupError extends VibeError {
     )
   }
 }
+
+export class ScenarioFetchError extends VibeError {
+  constructor(url: string, reason?: string) {
+    super(
+      `Failed to fetch scenario from URL: ${url}${reason ? ` — ${reason}` : ''}`,
+      'SCENARIO_FETCH_FAILED',
+      'Check the URL is accessible and returns valid YAML',
+    )
+  }
+}

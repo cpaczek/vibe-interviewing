@@ -165,6 +165,27 @@ describe('validator', () => {
 
       expect(result.warnings.some((w) => w.includes('evaluation'))).toBe(true)
     })
+
+    it('warns when interviewer_guide is missing', () => {
+      const config = makeConfig({ interviewer_guide: undefined })
+      const result = validateScenario(config)
+
+      expect(result.warnings.some((w) => w.includes('interviewer_guide'))).toBe(true)
+    })
+
+    it('does not warn when interviewer_guide is provided', () => {
+      const config = makeConfig({
+        interviewer_guide: {
+          overview: 'Tests debugging skills',
+          key_signals: [],
+          common_pitfalls: [],
+          debrief_questions: [],
+        },
+      })
+      const result = validateScenario(config)
+
+      expect(result.warnings.some((w) => w.includes('interviewer_guide'))).toBe(false)
+    })
   })
 
   describe('validateScenarioOrThrow', () => {

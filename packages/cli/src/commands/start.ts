@@ -4,6 +4,7 @@ import { resolve } from 'node:path'
 import { execSync } from 'node:child_process'
 import {
   loadScenarioConfig,
+  isUrl,
   discoverAllScenarios,
   detectInstalledTools,
   SessionManager,
@@ -19,7 +20,7 @@ export function registerStartCommand(program: Command): void {
   program
     .command('start [scenario]')
     .description('Start an interview — clone a scenario repo and launch Claude Code')
-    .option('-s, --scenario-file <path>', 'Path to a local scenario.yaml file')
+    .option('-s, --scenario-file <path>', 'Path or URL to a scenario.yaml file')
     .option('-w, --workdir <path>', 'Custom workspace directory for the session')
     .option('-t, --tool <name>', 'AI tool to use (default: claude-code)')
     .option('-m, --model <model>', 'Model to use')
@@ -41,7 +42,10 @@ export function registerStartCommand(program: Command): void {
           // 1. Resolve scenario config
           let config
           if (options.scenarioFile) {
-            config = await loadScenarioConfig(resolve(options.scenarioFile))
+            const source = isUrl(options.scenarioFile)
+              ? options.scenarioFile
+              : resolve(options.scenarioFile)
+            config = await loadScenarioConfig(source)
           } else if (scenarioName) {
             // Look up by name in registry
             const scenarios = await discoverAllScenarios()

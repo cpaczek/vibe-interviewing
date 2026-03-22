@@ -75,6 +75,12 @@ export function validateScenario(config: ScenarioConfig): ValidationResult {
     warnings.push('No evaluation criteria defined')
   }
 
+  if (!config.interviewer_guide) {
+    warnings.push(
+      'No interviewer_guide defined — interviewers will have limited context during the session',
+    )
+  }
+
   return {
     valid: errors.length === 0,
     warnings,

@@ -109,6 +109,9 @@
 .t-muted {
   color: var(--text-muted);
 }
+.t-magenta {
+  color: var(--magenta);
+}
 
 /* ---- Cursor ---- */
 .terminal-cursor {

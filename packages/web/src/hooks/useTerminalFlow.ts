@@ -45,22 +45,29 @@ export function useTerminalFlow(steps: FlowStep[] | null): TerminalFlowState {
   const [spinnerLabel, setSpinnerLabel] = useState<string | null>(null)
   const [selectHighlight, setSelectHighlight] = useState(0)
   const lineIdCounter = useRef(0)
+  const stepsRef = useRef(steps)
+  stepsRef.current = steps
 
   const nextId = useCallback(() => {
     lineIdCounter.current += 1
     return `line-${lineIdCounter.current}`
   }, [])
 
-  // Reset when steps change
+  // Reset only when steps goes to null (full reset) or from null to non-null (initial load)
+  const prevStepsNull = useRef(true)
   useEffect(() => {
-    setLines([])
-    setStepIndex(0)
-    setPhase(steps ? 'idle' : 'idle')
-    setCommandCharIndex(0)
-    setSpinnerLabel(null)
-    setSpinnerFrame(0)
-    setSelectHighlight(0)
-    lineIdCounter.current = 0
+    const isNull = steps === null
+    if (isNull || prevStepsNull.current) {
+      setLines([])
+      setStepIndex(0)
+      setPhase(steps ? 'idle' : 'idle')
+      setCommandCharIndex(0)
+      setSpinnerLabel(null)
+      setSpinnerFrame(0)
+      setSelectHighlight(0)
+      lineIdCounter.current = 0
+    }
+    prevStepsNull.current = isNull
   }, [steps])
 
   // Process the current step based on phase

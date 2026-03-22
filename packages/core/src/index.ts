@@ -6,8 +6,10 @@ export {
   type ScenarioInfo,
   type AIRules,
   type Evaluation,
+  type InterviewerGuide,
+  type KeySignal,
 } from './scenario/types.js'
-export { loadScenarioConfig, generateSystemPrompt } from './scenario/loader.js'
+export { loadScenarioConfig, generateSystemPrompt, isUrl } from './scenario/loader.js'
 export {
   validateScenario,
   validateScenarioOrThrow,
@@ -56,6 +58,7 @@ export {
   VibeError,
   ScenarioNotFoundError,
   ScenarioValidationError,
+  ScenarioFetchError,
   AIToolNotFoundError,
   SessionNotFoundError,
   GitCloneError,

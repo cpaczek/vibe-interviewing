@@ -72,30 +72,59 @@ evaluation:
     - 'Used AI effectively as a partner'
   expected_fix: 'One-line description of expected outcome'
 
+# Interviewer guide — shown to the interviewer during hosting, never to the candidate
+interviewer_guide:
+  overview: |
+    What this scenario tests and why. Summarize the key skills being evaluated
+    and what makes this scenario interesting.
+  key_signals:
+    - signal: 'Reproduces before fixing'
+      positive: 'Starts by reproducing the issue with curl'
+      negative: 'Jumps straight to reading code without testing'
+    - signal: 'Critical evaluation of AI'
+      positive: 'Questions AI suggestions, verifies against code'
+      negative: 'Accepts first AI output without checking'
+  common_pitfalls:
+    - 'Fixing symptoms instead of the root cause'
+    - 'Over-reliance on AI without independent investigation'
+  debrief_questions:
+    - 'Walk me through your debugging process'
+    - 'How did AI help or hinder your approach?'
+
 license: MIT
 ```
 
 ## Schema Reference
 
-| Field                 | Required | Types   | Description                                           |
-| --------------------- | -------- | ------- | ----------------------------------------------------- |
-| `name`                | Yes      | All     | Unique kebab-case identifier                          |
-| `description`         | Yes      | All     | One-line task description (never the answer)          |
-| `type`                | Yes      | All     | `debug`, `feature`, or `refactor`                     |
-| `difficulty`          | Yes      | All     | `easy`, `medium`, or `hard`                           |
-| `estimated_time`      | Yes      | All     | Duration estimate (e.g., `30-45m`)                    |
-| `tags`                | No       | All     | Searchable technology tags                            |
-| `repo`                | Yes      | All     | GitHub URL or `owner/repo` shorthand                  |
-| `commit`              | Yes      | All     | Commit SHA to pin (7-40 hex chars, not branch names)  |
-| `setup`               | No       | All     | Shell commands to run after cloning                   |
-| `patch`               | No       | Debug   | Find/replace patches to inject bugs                   |
-| `delete_files`        | No       | All     | Files/dirs to remove (e.g., tests that reveal answer) |
-| `briefing`            | Yes      | All     | Candidate-facing message (Slack-style)                |
-| `ai_rules`            | Yes      | All     | AI behavioral rules (hidden from candidate)           |
-| `solution`            | No       | Debug   | Interviewer reference for the fix                     |
-| `acceptance_criteria` | No       | Feature | Testable requirements for the feature                 |
-| `evaluation`          | No       | All     | Scoring rubric for interviewers                       |
-| `license`             | No       | All     | License of the original project                       |
+| Field                 | Required | Types   | Description                                                |
+| --------------------- | -------- | ------- | ---------------------------------------------------------- |
+| `name`                | Yes      | All     | Unique kebab-case identifier                               |
+| `description`         | Yes      | All     | One-line task description (never the answer)               |
+| `type`                | Yes      | All     | `debug`, `feature`, or `refactor`                          |
+| `difficulty`          | Yes      | All     | `easy`, `medium`, or `hard`                                |
+| `estimated_time`      | Yes      | All     | Duration estimate (e.g., `30-45m`)                         |
+| `tags`                | No       | All     | Searchable technology tags                                 |
+| `repo`                | Yes      | All     | GitHub URL or `owner/repo` shorthand                       |
+| `commit`              | Yes      | All     | Commit SHA to pin (7-40 hex chars, not branch names)       |
+| `setup`               | No       | All     | Shell commands to run after cloning                        |
+| `patch`               | No       | Debug   | Find/replace patches to inject bugs                        |
+| `delete_files`        | No       | All     | Files/dirs to remove (e.g., tests that reveal answer)      |
+| `briefing`            | Yes      | All     | Candidate-facing message (Slack-style)                     |
+| `ai_rules`            | Yes      | All     | AI behavioral rules (hidden from candidate)                |
+| `solution`            | No       | Debug   | Interviewer reference for the fix                          |
+| `acceptance_criteria` | No       | Feature | Testable requirements for the feature                      |
+| `evaluation`          | No       | All     | Scoring rubric for interviewers                            |
+| `interviewer_guide`   | No       | All     | Structured interviewer guide (overview, signals, pitfalls) |
+| `license`             | No       | All     | License of the original project                            |
+
+### `interviewer_guide` Sub-fields
+
+| Field               | Type     | Description                                                        |
+| ------------------- | -------- | ------------------------------------------------------------------ |
+| `overview`          | string   | What this scenario evaluates and why                               |
+| `key_signals`       | array    | Behaviors to watch for, each with `signal`, `positive`, `negative` |
+| `common_pitfalls`   | string[] | Common mistakes candidates make                                    |
+| `debrief_questions` | string[] | Questions to ask the candidate after the session                   |
 
 ## Key Rules
 
@@ -120,6 +149,27 @@ vibe-interviewing validate path/to/scenario.yaml
 ```
 
 This checks for schema errors, missing fields, and type-specific warnings (e.g., debug scenarios without patches).
+
+## Sharing Scenarios
+
+Once you've created a `scenario.yaml`, you can share it by hosting the file anywhere accessible via URL — GitHub repos, gists, or any HTTP server.
+
+```bash
+# From a GitHub repo (blob URLs are auto-converted to raw)
+vibe-interviewing host -s https://github.com/your-org/scenarios/blob/main/scenario.yaml
+
+# From a GitHub gist
+vibe-interviewing host -s https://gist.githubusercontent.com/user/abc123/raw/scenario.yaml
+
+# From any URL
+vibe-interviewing host -s https://example.com/scenarios/my-scenario.yaml
+```
+
+The candidate can also start directly from a URL:
+
+```bash
+vibe-interviewing start -s https://github.com/your-org/scenarios/blob/main/scenario.yaml
+```
 
 ## Hosting
 

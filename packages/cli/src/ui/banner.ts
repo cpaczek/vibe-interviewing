@@ -1,5 +1,6 @@
 import chalk from 'chalk'
 import boxen from 'boxen'
+import type { InterviewerGuide } from '@vibe-interviewing/core'
 
 export function showBanner(): void {
   const banner = boxen(
@@ -42,5 +43,50 @@ export function showBriefing(
       borderColor: 'yellow',
     },
   )
+  console.log(box)
+}
+
+/**
+ * Display the interviewer guide in a styled box.
+ * Shown to the interviewer during `host`, never to the candidate.
+ */
+export function showInterviewerGuide(guide: InterviewerGuide): void {
+  const sections: string[] = []
+
+  sections.push(chalk.bold.magenta('INTERVIEWER GUIDE'))
+  sections.push('')
+  sections.push(normalizeBriefing(guide.overview))
+
+  if (guide.key_signals.length > 0) {
+    sections.push('')
+    sections.push(chalk.bold('What to Watch For'))
+    for (const signal of guide.key_signals) {
+      sections.push(`  ${chalk.bold(signal.signal)}`)
+      sections.push(`    ${chalk.green('+')} ${signal.positive}`)
+      sections.push(`    ${chalk.red('-')} ${signal.negative}`)
+    }
+  }
+
+  if (guide.common_pitfalls.length > 0) {
+    sections.push('')
+    sections.push(chalk.bold('Common Pitfalls'))
+    for (const pitfall of guide.common_pitfalls) {
+      sections.push(`  ${chalk.yellow('!')} ${pitfall}`)
+    }
+  }
+
+  if (guide.debrief_questions.length > 0) {
+    sections.push('')
+    sections.push(chalk.bold('Debrief Questions'))
+    for (let i = 0; i < guide.debrief_questions.length; i++) {
+      sections.push(`  ${i + 1}. ${guide.debrief_questions[i]}`)
+    }
+  }
+
+  const box = boxen(sections.join('\n'), {
+    padding: 1,
+    borderStyle: 'round',
+    borderColor: 'magenta',
+  })
   console.log(box)
 }

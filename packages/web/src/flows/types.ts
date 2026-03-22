@@ -1,6 +1,6 @@
 export interface StyledText {
   text: string
-  color?: 'accent' | 'green' | 'yellow' | 'red' | 'dim' | 'bold' | 'white' | 'muted'
+  color?: 'accent' | 'green' | 'yellow' | 'red' | 'dim' | 'bold' | 'white' | 'muted' | 'magenta'
 }
 
 export type LinePart = string | StyledText
@@ -21,6 +21,6 @@ export type FlowStep =
       type: 'box'
       lines: LinePart[][]
       border: 'round' | 'double'
-      borderColor?: 'accent' | 'yellow'
+      borderColor?: 'accent' | 'yellow' | 'magenta'
     }
   | { type: 'pause'; duration: number }

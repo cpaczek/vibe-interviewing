@@ -13,6 +13,7 @@ const colorClass: Record<NonNullable<StyledText['color']>, string> = {
   bold: 't-bold',
   white: 't-white',
   muted: 't-muted',
+  magenta: 't-magenta',
 }
 
 function renderPart(part: LinePart, index: number): React.JSX.Element {

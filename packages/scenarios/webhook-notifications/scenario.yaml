@@ -125,4 +125,39 @@ evaluation:
     - 'Tested end-to-end with a webhook listener'
     - 'Used AI effectively as a development partner'
 
+interviewer_guide:
+  overview: |
+    This scenario evaluates feature design and integration skills. The candidate must build
+    a webhook notification system on top of an existing REST API. A key insight is that
+    json-server already handles CRUD for any resource in db.json — so the "webhooks" array
+    gives them registration for free. Strong candidates discover this quickly and focus their
+    effort on the notification delivery logic rather than rebuilding CRUD.
+  key_signals:
+    - signal: 'Discovers the free CRUD'
+      positive: 'Realizes json-server already handles /webhooks CRUD via the seeded array in db.json'
+      negative: 'Builds custom webhook registration routes from scratch, duplicating existing functionality'
+    - signal: 'Starts with core functionality'
+      positive: 'Gets basic webhook delivery working first, then adds filtering and error handling'
+      negative: 'Gets bogged down in edge cases (retries, backoff, ordering) before core delivery works'
+    - signal: 'Handles errors gracefully'
+      positive: 'Webhook delivery failures are caught and do not crash the server or block API responses'
+      negative: 'Unhandled promise rejections or synchronous delivery that blocks the response'
+    - signal: 'Tests end-to-end'
+      positive: 'Sets up a listener to verify webhook delivery, tests the full flow'
+      negative: 'Only tests registration without verifying actual delivery'
+    - signal: 'Clean integration'
+      positive: 'Hooks into existing codebase patterns (middleware, service methods) rather than bolting on'
+      negative: 'Adds webhook logic in awkward places that break separation of concerns'
+  common_pitfalls:
+    - "Building custom CRUD for webhooks instead of leveraging json-server's built-in resource handling"
+    - 'Making webhook delivery synchronous, which blocks the API response'
+    - 'Over-engineering retry logic and backoff strategies before basic delivery works'
+    - 'Not filtering notifications by resource — sending every event to every webhook'
+    - 'Forgetting to exclude the "webhooks" resource from triggering webhook notifications'
+  debrief_questions:
+    - 'How did you decide where to hook into the codebase for notification delivery?'
+    - 'Did you notice that json-server handles /webhooks CRUD automatically? How did that affect your approach?'
+    - 'How would you handle webhook delivery at scale if this were a production system?'
+    - 'What would you add if you had another 30 minutes?'
+
 license: MIT

@@ -5,6 +5,7 @@ import { readFile } from 'node:fs/promises'
 import { execSync } from 'node:child_process'
 import {
   loadScenarioConfig,
+  isUrl,
   discoverAllScenarios,
   SessionManager,
   detectInstalledTools,
@@ -16,7 +17,7 @@ import {
   getWorkerUrl,
   type SessionMetadata,
 } from '@vibe-interviewing/core/network'
-import { showBanner } from '../ui/banner.js'
+import { showBanner, showInterviewerGuide } from '../ui/banner.js'
 import { createSpinner } from '../ui/spinner.js'
 import { selectScenario } from '../ui/prompts.js'
 import * as log from '../utils/logger.js'
@@ -27,7 +28,7 @@ export function registerHostCommand(program: Command): void {
     .description(
       'Host an interview session — prepare a workspace and serve it to a remote candidate',
     )
-    .option('-s, --scenario-file <path>', 'Path to a local scenario.yaml file')
+    .option('-s, --scenario-file <path>', 'Path or URL to a scenario.yaml file')
     .option('-p, --port <port>', 'Port to serve on (LAN mode only, default: random)')
     .option('--local', 'Use LAN mode (direct HTTP) instead of cloud hosting')
     .option('--worker-url <url>', 'Cloud relay URL (default: api.vibe-interviewing.iar.dev)')
@@ -47,7 +48,10 @@ export function registerHostCommand(program: Command): void {
           // 1. Resolve scenario config
           let config
           if (options.scenarioFile) {
-            config = await loadScenarioConfig(resolve(options.scenarioFile))
+            const source = isUrl(options.scenarioFile)
+              ? options.scenarioFile
+              : resolve(options.scenarioFile)
+            config = await loadScenarioConfig(source)
           } else if (scenarioName) {
             const scenarios = await discoverAllScenarios()
             const found = scenarios.find((s) => s.name === scenarioName)
@@ -90,6 +94,11 @@ export function registerHostCommand(program: Command): void {
           )
 
           spinner.succeed('Workspace ready')
+
+          if (config.interviewer_guide) {
+            console.log()
+            showInterviewerGuide(config.interviewer_guide)
+          }
 
           if (options.local) {
             // LAN mode — start HTTP server (original behavior)

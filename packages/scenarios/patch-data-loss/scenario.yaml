@@ -124,4 +124,38 @@ evaluation:
     - 'Used AI effectively as a debugging partner'
   expected_fix: 'Restore the ternary in #updateOrPatchById: isPatch ? { ...item, ...body, id } : { ...body, id }'
 
+interviewer_guide:
+  overview: |
+    This scenario evaluates systematic debugging skills and HTTP semantics understanding.
+    The bug is subtle — PATCH was changed to behave like PUT, dropping fields not included
+    in the request body. Strong candidates reproduce first, read the source, and understand
+    the merge vs replace distinction. This also tests how candidates use AI as a debugging
+    partner rather than just asking it to find the bug.
+  key_signals:
+    - signal: 'Reproduces before fixing'
+      positive: 'Starts by sending curl requests to reproduce the data loss'
+      negative: 'Jumps straight into reading code or asks AI to find the bug'
+    - signal: 'Reads source code'
+      positive: 'Traces the request path through the codebase to find where updates happen'
+      negative: 'Relies entirely on AI to explain the code without reading it'
+    - signal: 'Understands HTTP semantics'
+      positive: 'Recognizes that PATCH should merge and PUT should replace'
+      negative: 'Treats PATCH and PUT as interchangeable or does not know the difference'
+    - signal: 'Critical evaluation of AI'
+      positive: 'Questions AI suggestions, verifies them against the actual code'
+      negative: 'Accepts the first AI suggestion without testing or reviewing'
+    - signal: 'Verifies the fix'
+      positive: 'Re-runs the reproduction steps to confirm the fix works'
+      negative: 'Applies a fix and considers it done without testing'
+  common_pitfalls:
+    - 'Asking AI to "find the bug" without investigating — shows over-reliance on AI'
+    - 'Fixing symptoms (e.g., adding a workaround in the route handler) instead of the root cause'
+    - 'Not understanding that the non-array #updateOrPatch method is NOT affected'
+    - 'Confusing the spread operator behavior — the fix is about restoring the existing item spread'
+  debrief_questions:
+    - 'Walk me through how you reproduced the issue. What requests did you try?'
+    - 'Can you explain the difference between how PATCH and PUT should behave?'
+    - 'How did you use AI during the debugging process? What worked well?'
+    - 'If you were reviewing a PR that introduced this bug, what would you look for?'
+
 license: MIT
