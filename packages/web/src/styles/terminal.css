@@ -61,9 +61,15 @@
   scrollbar-color: var(--border) transparent;
 }
 
-.terminal-body::-webkit-scrollbar { width: 3px; }
-.terminal-body::-webkit-scrollbar-track { background: transparent; }
-.terminal-body::-webkit-scrollbar-thumb { background: var(--border); }
+.terminal-body::-webkit-scrollbar {
+  width: 3px;
+}
+.terminal-body::-webkit-scrollbar-track {
+  background: transparent;
+}
+.terminal-body::-webkit-scrollbar-thumb {
+  background: var(--border);
+}
 
 /* ---- Lines ---- */
 .terminal-line {
@@ -77,14 +83,32 @@
 }
 
 /* ---- Colors ---- */
-.t-accent { color: var(--accent); }
-.t-green { color: var(--green); }
-.t-yellow { color: var(--yellow); }
-.t-red { color: var(--red); }
-.t-dim { color: var(--text-muted); opacity: 0.6; }
-.t-bold { color: var(--white); font-weight: 600; }
-.t-white { color: var(--white); }
-.t-muted { color: var(--text-muted); }
+.t-accent {
+  color: var(--accent);
+}
+.t-green {
+  color: var(--green);
+}
+.t-yellow {
+  color: var(--yellow);
+}
+.t-red {
+  color: var(--red);
+}
+.t-dim {
+  color: var(--text-muted);
+  opacity: 0.6;
+}
+.t-bold {
+  color: var(--white);
+  font-weight: 600;
+}
+.t-white {
+  color: var(--white);
+}
+.t-muted {
+  color: var(--text-muted);
+}
 
 /* ---- Cursor ---- */
 .terminal-cursor {
@@ -98,8 +122,13 @@
 }
 
 @keyframes cursor-blink {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0; }
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0;
+  }
 }
 
 /* ---- Prompt (clickable idle state) ---- */

@@ -213,15 +213,33 @@ body {
 
 /* ---- Responsive ---- */
 @media (max-width: 768px) {
-  :root { --gutter: 20px; }
-  .hero { padding: 48px var(--gutter) 32px; }
-  .terminal-section { padding: 0 12px 48px; }
-  .footer { flex-direction: column; gap: 12px; align-items: flex-start; }
+  :root {
+    --gutter: 20px;
+  }
+  .hero {
+    padding: 48px var(--gutter) 32px;
+  }
+  .terminal-section {
+    padding: 0 12px 48px;
+  }
+  .footer {
+    flex-direction: column;
+    gap: 12px;
+    align-items: flex-start;
+  }
 }
 
 @media (max-width: 480px) {
-  :root { --gutter: 16px; }
-  .nav-tag { display: none; }
-  .hero { padding: 36px var(--gutter) 24px; }
-  .terminal-section { padding: 0 8px 36px; }
+  :root {
+    --gutter: 16px;
+  }
+  .nav-tag {
+    display: none;
+  }
+  .hero {
+    padding: 36px var(--gutter) 24px;
+  }
+  .terminal-section {
+    padding: 0 8px 36px;
+  }
 }
