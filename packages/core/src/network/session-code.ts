@@ -64,6 +64,21 @@ export function decodeSessionCode(code: string): { host: string; port: number } 
   return { host, port }
 }
 
+/**
+ * Check if a session code is a cloud code (6 chars) vs LAN code (10 chars).
+ *
+ * Cloud codes are 6 alphanumeric characters: VIBE-A3X9K2
+ * LAN codes are 10 alphanumeric characters: VIBE-3R8KW1F0NX
+ */
+export function isCloudSessionCode(code: string): boolean {
+  let raw = code.trim().toUpperCase()
+  if (raw.startsWith('VIBE-')) {
+    raw = raw.slice(5)
+  }
+  // Cloud codes are exactly 6 chars, LAN codes are up to 10
+  return /^[0-9A-Z]{6}$/.test(raw)
+}
+
 /** Error for invalid session codes */
 export class InvalidSessionCodeError extends VibeError {
   constructor(message: string) {

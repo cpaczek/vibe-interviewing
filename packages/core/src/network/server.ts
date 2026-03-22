@@ -11,6 +11,7 @@ import { encodeSessionCode } from './session-code.js'
 /** Metadata served to candidates */
 export interface SessionMetadata {
   scenarioName: string
+  type: string
   difficulty: string
   estimatedTime: string
   briefing: string
@@ -41,6 +42,7 @@ export class SessionServer extends EventEmitter<SessionServerEvents> {
 
     const metadata: SessionMetadata = {
       scenarioName: config.name,
+      type: config.type,
       difficulty: config.difficulty,
       estimatedTime: config.estimated_time,
       briefing: config.briefing,

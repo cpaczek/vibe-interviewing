@@ -1,0 +1,128 @@
+name: webhook-notifications
+description: 'Build a webhook notification system for a REST API'
+type: feature
+difficulty: hard
+estimated_time: '45-60m'
+tags:
+  - node
+  - rest-api
+  - json-server
+  - webhooks
+  - event-driven
+
+repo: 'https://github.com/typicode/json-server'
+commit: '6ad7562b6aba175bec616d342e1319e8dbbad1af'
+
+setup:
+  - 'npm install'
+
+patch:
+  # Replace fixture data with richer records for more interesting webhook payloads
+  - file: 'fixtures/db.json'
+    find: |
+      {
+        "posts": [
+          { "id": "1", "title": "a title" },
+          { "id": "2", "title": "another title" }
+        ],
+        "comments": [
+          { "id": "1", "text": "a comment about post 1", "postId": "1" },
+          { "id": "2", "text": "another comment about post 1", "postId": "1" }
+        ],
+        "profile": {
+          "name": "typicode"
+        }
+      }
+    replace: |
+      {
+        "products": [
+          { "id": "1", "name": "Wireless Headphones", "price": 79.99, "category": "electronics", "inStock": true },
+          { "id": "2", "name": "Running Shoes", "price": 129.99, "category": "footwear", "inStock": true },
+          { "id": "3", "name": "Coffee Maker", "price": 49.99, "category": "kitchen", "inStock": false }
+        ],
+        "orders": [
+          { "id": "1", "productId": "1", "quantity": 2, "status": "shipped" },
+          { "id": "2", "productId": "3", "quantity": 1, "status": "pending" }
+        ],
+        "webhooks": []
+      }
+
+delete_files:
+  - 'src/*.test.ts'
+
+briefing: |
+  We need to add webhook support to our product catalog API so that external
+  integrations can react to changes in real time. Right now if a third-party system
+  wants to know when a product is updated or an order is created, they have to poll.
+
+  Build a webhook notification system:
+
+  1. Clients register webhooks by POSTing to /webhooks with a URL and optional
+     event filter (e.g., only notify on "products" changes)
+  2. When any resource is created, updated, or deleted, the server sends a POST
+     request to all matching registered webhook URLs
+  3. Clients can list their webhooks (GET /webhooks) and delete them (DELETE /webhooks/:id)
+
+  The webhook payload should include what happened: the event type (create/update/delete),
+  which resource, and the affected data.
+
+  The server runs locally:
+
+    node --experimental-strip-types src/bin.ts fixtures/db.json
+
+  Test with curl on port 3000. You can use a simple listener (like a second
+  HTTP server or a request-catching service) to verify webhook delivery.
+
+acceptance_criteria:
+  - 'POST /webhooks with { "url": "...", "resource": "products" } registers a webhook'
+  - 'POST /webhooks with { "url": "..." } (no resource filter) registers for all events'
+  - 'GET /webhooks returns all registered webhooks'
+  - 'DELETE /webhooks/:id removes a webhook'
+  - 'When a resource is created (POST /products), matching webhooks receive a notification'
+  - 'When a resource is updated (PUT or PATCH /products/:id), matching webhooks receive a notification'
+  - 'When a resource is deleted (DELETE /products/:id), matching webhooks receive a notification'
+  - 'Webhook payload includes: event type, resource name, affected data, and timestamp'
+  - 'Failed webhook deliveries do not crash the server or block the API response'
+  - 'Existing CRUD endpoints still work correctly'
+
+ai_rules:
+  role: |
+    You are a senior engineer helping a candidate build a webhook notification
+    system. Guide their design decisions but let them drive the implementation.
+  rules:
+    - 'Help the candidate understand the existing codebase structure when asked'
+    - 'If asked about design choices, discuss trade-offs (sync vs async delivery, retry strategies, etc.)'
+    - 'Encourage starting with the simplest working implementation, then iterating'
+    - 'Suggest they write a small test listener to verify webhook delivery'
+    - 'If they get bogged down in edge cases (retries, backoff, ordering), redirect to core functionality first'
+    - 'Praise clean integration with the existing codebase patterns'
+  knowledge: |
+    The json-server codebase has a clean separation:
+    - src/app.ts defines routes and delegates to Service
+    - src/service.ts handles CRUD logic with lowdb
+    - The "webhooks" array is already seeded in db.json as an empty array
+
+    A good implementation would:
+    1. Use the existing Service class to manage webhook registrations (CRUD on /webhooks)
+       — json-server already handles any resource in db.json, so GET/POST/DELETE /webhooks
+       works out of the box. The candidate might realize this or build custom handlers.
+    2. Add middleware or post-response hooks in app.ts that fire after mutations
+    3. Use fetch() to deliver webhook payloads asynchronously (fire-and-forget)
+    4. Structure the payload as: { event: "create"|"update"|"delete", resource: "products", data: {...}, timestamp: "..." }
+
+    Key insight: since "webhooks" is already a resource in db.json, the candidate
+    gets CRUD for webhook registrations for free via json-server's existing routing.
+    They just need to add the notification delivery logic.
+
+evaluation:
+  criteria:
+    - 'Webhook registration works (create, list, delete)'
+    - 'Notifications are delivered on create, update, and delete operations'
+    - 'Webhook payload contains event type, resource, data, and timestamp'
+    - 'Resource filtering works (webhooks can subscribe to specific resources)'
+    - 'Failed deliveries are handled gracefully (no crashes, no blocking)'
+    - 'Clean integration with existing codebase patterns'
+    - 'Tested end-to-end with a webhook listener'
+    - 'Used AI effectively as a development partner'
+
+license: MIT

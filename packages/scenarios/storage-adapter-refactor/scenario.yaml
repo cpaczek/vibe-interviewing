@@ -1,0 +1,84 @@
+name: storage-adapter-refactor
+description: 'Refactor tightly-coupled storage layer to support pluggable backends'
+type: refactor
+difficulty: medium
+estimated_time: '45-60m'
+tags:
+  - node
+  - rest-api
+  - json-server
+  - architecture
+  - design-patterns
+
+repo: 'https://github.com/typicode/json-server'
+commit: '6ad7562b6aba175bec616d342e1319e8dbbad1af'
+
+setup:
+  - 'npm install'
+
+delete_files:
+  - 'src/*.test.ts'
+
+briefing: |
+  We're turning json-server into a more flexible tool. Right now the entire data
+  layer is hardcoded to lowdb — the Service class directly imports and uses Low<Data>,
+  reads/writes through this.#db.data, and calls this.#db.write(). This coupling means
+  anyone who wants to use a different storage backend (in-memory for tests, SQLite for
+  persistence, Redis for shared state) has to fork the whole thing.
+
+  Your job: refactor the data layer so storage is pluggable. Define a clean storage
+  interface, wrap the existing lowdb usage in an adapter that implements it, and
+  refactor the Service class to depend on the interface instead of lowdb directly.
+  Then create an in-memory adapter as a second implementation to prove the
+  interface works.
+
+  The server runs locally:
+
+    node --experimental-strip-types src/bin.ts fixtures/db.json
+
+  Make sure the server still works exactly the same with the JSON file adapter
+  after your refactoring. You can test with curl on port 3000.
+
+ai_rules:
+  role: |
+    You are a senior engineer helping a candidate refactor a storage layer.
+    Guide them on design decisions but don't dictate the architecture.
+  rules:
+    - 'Let the candidate drive the interface design — there are multiple valid approaches'
+    - 'If asked, discuss trade-offs between different abstraction levels'
+    - 'Encourage them to keep the interface minimal — only what Service actually needs'
+    - 'Suggest they start by identifying all the places Service touches the database'
+    - 'If they over-engineer (too many methods, complex generics), gently suggest simplifying'
+    - 'Remind them to verify the server still works after each refactoring step'
+  knowledge: |
+    The Service class in src/service.ts directly depends on Low<Data> from lowdb.
+    It accesses data through this.#db.data (a Record<string, Item[] | Item>) and
+    persists changes with this.#db.write(). The key coupling points are:
+    - Constructor takes Low<Data>
+    - #get reads from this.#db.data[name]
+    - create/update/patch/destroy all call this.#db.write() after mutations
+    - The embed/nullifyForeignKey/deleteDependents functions also access db.data
+
+    A good refactoring would:
+    1. Define a StorageAdapter interface with methods like get(name), set(name, data), write()
+    2. Create a LowdbAdapter that wraps the current Low<Data> behavior
+    3. Create an InMemoryAdapter that stores data in a plain object
+    4. Update Service to accept StorageAdapter instead of Low<Data>
+    5. Update app.ts/bin.ts to create the adapter and pass it through
+
+    The candidate should notice that the helper functions (embed, nullifyForeignKey,
+    deleteDependents) also access db.data directly, which is a design decision —
+    either move them into Service or make them work through the adapter.
+
+evaluation:
+  criteria:
+    - 'Identified all coupling points between Service and lowdb'
+    - 'Designed a clean, minimal storage interface'
+    - 'Implemented a lowdb adapter that preserves existing behavior'
+    - 'Implemented an in-memory adapter'
+    - 'Refactored Service to use the interface instead of lowdb directly'
+    - 'Server still works correctly after refactoring (verified with curl)'
+    - 'Made thoughtful design decisions about abstraction level'
+    - 'Used AI effectively as an architecture partner'
+
+license: MIT

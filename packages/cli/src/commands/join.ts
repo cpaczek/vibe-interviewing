@@ -4,6 +4,7 @@ import { execSync } from 'node:child_process'
 import { resolve } from 'node:path'
 import {
   decodeSessionCode,
+  isCloudSessionCode,
   InvalidSessionCodeError,
   SessionManager,
   detectInstalledTools,
@@ -11,7 +12,12 @@ import {
   SetupError,
   type DetectedTool,
 } from '@vibe-interviewing/core'
-import { downloadSession } from '@vibe-interviewing/core/network'
+import {
+  downloadSession,
+  downloadSessionFromCloud,
+  getWorkerUrl,
+  type DownloadedSession,
+} from '@vibe-interviewing/core/network'
 import { showBanner, showBriefing } from '../ui/banner.js'
 import { createSpinner } from '../ui/spinner.js'
 import { selectAITool, confirmAction } from '../ui/prompts.js'
@@ -25,6 +31,7 @@ export function registerJoinCommand(program: Command): void {
     .option('-t, --tool <name>', 'AI tool to use (default: claude-code)')
     .option('-m, --model <model>', 'Model to use')
     .option('--no-web', 'Disable web search/fetch')
+    .option('--worker-url <url>', 'Cloud relay URL (for cloud-hosted sessions)')
     .action(
       async (
         sessionCode: string,
@@ -33,39 +40,61 @@ export function registerJoinCommand(program: Command): void {
           tool?: string
           model?: string
           web?: boolean
+          workerUrl?: string
         },
       ) => {
         try {
           showBanner()
 
-          // 1. Decode session code
-          let host: string
-          let port: number
-          try {
-            const decoded = decodeSessionCode(sessionCode)
-            host = decoded.host
-            port = decoded.port
-          } catch (err) {
-            if (err instanceof InvalidSessionCodeError) {
-              log.error(`Invalid session code: ${sessionCode}`)
-              log.info('Session codes look like VIBE-XXXXXXXXXX')
-              process.exit(1)
-            }
-            throw err
-          }
-
-          log.info(`Connecting to ${chalk.dim(`${host}:${port}`)}...`)
-
-          // 2. Download session from host
-          const spinner = createSpinner('Downloading session...')
-          spinner.start()
-
           const targetDir = options.workdir ? resolve(options.workdir) : undefined
-          const downloaded = await downloadSession(host, port, targetDir, (stage) => {
-            spinner.text = stage
-          })
+          let downloaded: DownloadedSession
 
-          spinner.succeed('Session downloaded')
+          if (isCloudSessionCode(sessionCode)) {
+            // Cloud mode — download from Cloudflare Worker
+            const workerUrl = options.workerUrl ?? getWorkerUrl()
+            log.info(`Downloading from cloud...`)
+
+            const spinner = createSpinner('Downloading session...')
+            spinner.start()
+
+            downloaded = await downloadSessionFromCloud(
+              workerUrl,
+              sessionCode,
+              targetDir,
+              (stage) => {
+                spinner.text = stage
+              },
+            )
+
+            spinner.succeed('Session downloaded')
+          } else {
+            // LAN mode — download from direct IP:port
+            let host: string
+            let port: number
+            try {
+              const decoded = decodeSessionCode(sessionCode)
+              host = decoded.host
+              port = decoded.port
+            } catch (err) {
+              if (err instanceof InvalidSessionCodeError) {
+                log.error(`Invalid session code: ${sessionCode}`)
+                log.info('Session codes look like VIBE-XXXXXX (cloud) or VIBE-XXXXXXXXXX (LAN)')
+                process.exit(1)
+              }
+              throw err
+            }
+
+            log.info(`Connecting to ${chalk.dim(`${host}:${port}`)}...`)
+
+            const spinner = createSpinner('Downloading session...')
+            spinner.start()
+
+            downloaded = await downloadSession(host, port, targetDir, (stage) => {
+              spinner.text = stage
+            })
+
+            spinner.succeed('Session downloaded')
+          }
 
           // 3. Run setup commands
           if (downloaded.metadata.setupCommands.length > 0) {
@@ -144,6 +173,7 @@ export function registerJoinCommand(program: Command): void {
           }
 
           const disallowedTools = options.web === false ? ['WebSearch', 'WebFetch'] : undefined
+          const scenarioType = downloaded.metadata.type || 'debug'
           const difficulty = (
             ['easy', 'medium', 'hard'].includes(downloaded.metadata.difficulty)
               ? downloaded.metadata.difficulty
@@ -155,7 +185,7 @@ export function registerJoinCommand(program: Command): void {
             {
               name: downloaded.metadata.scenarioName,
               description: '',
-              type: 'debug',
+              type: scenarioType as 'debug' | 'feature' | 'refactor',
               difficulty,
               tags: [],
               estimated_time: downloaded.metadata.estimatedTime,

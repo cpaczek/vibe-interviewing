@@ -47,6 +47,7 @@ export { toStoredSession, type StoredSession } from './session/types.js'
 export {
   encodeSessionCode,
   decodeSessionCode,
+  isCloudSessionCode,
   InvalidSessionCodeError,
 } from './network/session-code.js'
 

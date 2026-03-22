@@ -1,109 +1,138 @@
 # Creating Scenarios
 
-## Using the Init Wizard
+## Using the Claude Code Skill (Recommended)
 
 The fastest way to create a scenario:
 
-```bash
-vibe-interviewing init
-```
+1. Open Claude Code in any project (or anywhere if using a GitHub URL)
+2. Run `/create-scenario`
+3. Follow the interactive guide
 
-This walks you through selecting a scenario type, difficulty, environment, and generates a `.vibe/` directory with all required config files.
+The skill analyzes the codebase, helps you design the challenge, and generates a complete `scenario.yaml`.
 
 ## Manual Authoring
 
-Create a `.vibe/scenario.yaml` file in your scenario directory. This is the single source of truth for your scenario.
+Create a `scenario.yaml` file with the following schema:
+
+```yaml
+name: 'short-kebab-case-name'
+description: 'One-line description of the TASK (never the answer)'
+type: debug # debug | feature | refactor
+difficulty: medium # easy | medium | hard
+estimated_time: '30-45m'
+tags:
+  - node
+  - express
+
+repo: 'https://github.com/owner/repo'
+commit: 'abc1234def5678...' # Full commit SHA (7-40 hex chars)
+
+setup:
+  - 'npm install' # Commands to run after cloning
+
+# Patches inject bugs or set up initial state (find/replace in source files)
+patch:
+  - file: 'src/service.ts'
+    find: 'original code'
+    replace: 'modified code'
+
+# Files to remove from the workspace (e.g., tests that reveal the bug)
+delete_files:
+  - 'test'
+
+# Briefing shown to the candidate (write like a Slack message from a team lead)
+briefing: |
+  Hey — we're getting reports from customers that...
+
+# AI behavioral rules (hidden from the candidate, injected via system prompt)
+ai_rules:
+  role: |
+    You are a senior engineer helping a candidate.
+    Act as a patient but not overly helpful colleague.
+  rules:
+    - 'Never reveal the exact answer directly'
+    - 'Encourage writing or running tests'
+    - 'If stuck for 10+ minutes, offer a directional hint'
+  knowledge: |
+    Detailed description of the answer (hidden from candidate).
+
+# Interviewer reference (optional but recommended for debug scenarios)
+solution: |
+  In src/service.ts, change X back to Y...
+
+# For feature scenarios — concrete, testable requirements
+acceptance_criteria:
+  - 'GET /products?q=keyword returns matching results'
+  - 'Pagination works with page and limit params'
+
+# Evaluation rubric
+evaluation:
+  criteria:
+    - 'Found and fixed the bug'
+    - 'Used AI effectively as a partner'
+  expected_fix: 'One-line description of expected outcome'
+
+license: MIT
+```
 
 ## Schema Reference
 
-```yaml
-name: "my-scenario"
-type: "debugging" | "feature" | "refactor" | "design" | "investigation"
-difficulty: "junior" | "mid" | "senior" | "staff"
-estimated_time: "45m"
+| Field                 | Required | Types   | Description                                           |
+| --------------------- | -------- | ------- | ----------------------------------------------------- |
+| `name`                | Yes      | All     | Unique kebab-case identifier                          |
+| `description`         | Yes      | All     | One-line task description (never the answer)          |
+| `type`                | Yes      | All     | `debug`, `feature`, or `refactor`                     |
+| `difficulty`          | Yes      | All     | `easy`, `medium`, or `hard`                           |
+| `estimated_time`      | Yes      | All     | Duration estimate (e.g., `30-45m`)                    |
+| `tags`                | No       | All     | Searchable technology tags                            |
+| `repo`                | Yes      | All     | GitHub URL or `owner/repo` shorthand                  |
+| `commit`              | Yes      | All     | Commit SHA to pin (7-40 hex chars, not branch names)  |
+| `setup`               | No       | All     | Shell commands to run after cloning                   |
+| `patch`               | No       | Debug   | Find/replace patches to inject bugs                   |
+| `delete_files`        | No       | All     | Files/dirs to remove (e.g., tests that reveal answer) |
+| `briefing`            | Yes      | All     | Candidate-facing message (Slack-style)                |
+| `ai_rules`            | Yes      | All     | AI behavioral rules (hidden from candidate)           |
+| `solution`            | No       | Debug   | Interviewer reference for the fix                     |
+| `acceptance_criteria` | No       | Feature | Testable requirements for the feature                 |
+| `evaluation`          | No       | All     | Scoring rubric for interviewers                       |
+| `license`             | No       | All     | License of the original project                       |
 
-briefing: |
-  Markdown text shown to the candidate at the start of the session.
-  Describe the problem, constraints, and expected deliverables.
+## Key Rules
 
-environment:
-  dockerfile: "Dockerfile"          # Path relative to .vibe/
-  commands:                          # Commands available in the workspace
-    - name: "test"
-      run: "npm test"
-    - name: "dev"
-      run: "npm run dev"
-  ports: [3000, 5432]               # Ports to expose from Docker
-  setup_commands:                    # Run once when container starts
-    - "npm install"
-    - "npm run db:migrate"
-  healthcheck:
-    command: "curl -f http://localhost:3000/health"
-    interval: "10s"
-    retries: 3
+**Candidate-visible fields must never reveal the answer:**
 
-ai_context:
-  role: |
-    Description of what AI assistant role the candidate's AI should adopt.
-  rules:
-    - "Do not reveal the solution directly"
-    - "Guide the candidate through debugging steps"
-    - "Ask clarifying questions before writing code"
-  knowledge:
-    - "docs/architecture.md"         # Files injected into AI context
-    - "docs/api-spec.md"
+- `description` — describe the task or symptom, not the root cause
+- `briefing` — describe what users are experiencing, not what's broken in the code
+- `tags` — use technology tags, never bug-type tags
 
-evaluation:
-  criteria:
-    - name: "Problem Solving"
-      weight: 30
-      description: "How effectively did the candidate diagnose the issue?"
-    - name: "AI Collaboration"
-      weight: 25
-      description: "How well did the candidate leverage AI tools?"
-    - name: "Code Quality"
-      weight: 25
-      description: "Is the final solution clean and well-tested?"
-    - name: "Communication"
-      weight: 20
-      description: "Did the candidate explain their reasoning?"
-```
+**The briefing must read like a real message from a real person.** Casual, contextual, with how to run the app. Not a formal spec document.
 
-### Field Details
+**Patches must have unique find strings.** If the find string appears more than once in the file, the wrong occurrence might be replaced. Include more surrounding context to make it unique.
 
-| Field            | Required | Description                              |
-| ---------------- | -------- | ---------------------------------------- |
-| `name`           | Yes      | Unique identifier for the scenario       |
-| `type`           | Yes      | Category of the interview task           |
-| `difficulty`     | Yes      | Target experience level                  |
-| `estimated_time` | Yes      | Expected duration (e.g., `30m`, `1h`)    |
-| `briefing`       | Yes      | Candidate-facing instructions (Markdown) |
-| `environment`    | Yes      | Docker and runtime configuration         |
-| `ai_context`     | No       | Controls AI assistant behavior           |
-| `evaluation`     | No       | Scoring rubric for interviewers          |
+**Always pin to a commit SHA.** Never use branch names or tags — they change over time and break reproducibility.
 
-## Workspace Isolation
+**The candidate must be able to run the server locally.** Include startup instructions in the briefing and ensure setup commands work.
 
-The candidate workspace **never** contains scenario config, solutions, or AI rules. The `.vibe/` directory is mounted separately and not visible to the candidate or their AI tools.
-
-## Validating and Testing
-
-Validate your scenario config:
+## Validating
 
 ```bash
-vibe-interviewing validate .vibe/scenario.yaml
+vibe-interviewing validate path/to/scenario.yaml
 ```
 
-This checks for schema errors, missing files, and invalid references.
+This checks for schema errors, missing fields, and type-specific warnings (e.g., debug scenarios without patches).
 
-Run a full test of the scenario (builds Docker image, starts environment, runs healthcheck):
+## Hosting
 
 ```bash
-vibe-interviewing test .vibe/scenario.yaml
+# Cloud hosting (default — works across networks)
+vibe-interviewing host -s ./scenario.yaml
+
+# LAN hosting (direct HTTP, same network only)
+vibe-interviewing host --local -s ./scenario.yaml
 ```
 
-Use `--dry-run` to validate without building:
+The candidate joins with:
 
 ```bash
-vibe-interviewing test --dry-run .vibe/scenario.yaml
+vibe-interviewing join VIBE-XXXXXX
 ```

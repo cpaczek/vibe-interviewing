@@ -1,0 +1,127 @@
+name: patch-data-loss
+description: 'PATCH requests silently drop fields from records'
+type: debug
+difficulty: hard
+estimated_time: '30-45m'
+tags:
+  - node
+  - rest-api
+  - json-server
+  - data-integrity
+
+repo: 'https://github.com/typicode/json-server'
+commit: '6ad7562b6aba175bec616d342e1319e8dbbad1af'
+
+setup:
+  - 'npm install'
+
+patch:
+  # Replace the fixture data with richer records so field loss is observable
+  - file: 'fixtures/db.json'
+    find: |
+      {
+        "posts": [
+          { "id": "1", "title": "a title" },
+          { "id": "2", "title": "another title" }
+        ],
+        "comments": [
+          { "id": "1", "text": "a comment about post 1", "postId": "1" },
+          { "id": "2", "text": "another comment about post 1", "postId": "1" }
+        ],
+        "profile": {
+          "name": "typicode"
+        }
+      }
+    replace: |
+      {
+        "products": [
+          { "id": "1", "name": "Wireless Headphones", "price": 79.99, "category": "electronics", "description": "Noise-cancelling over-ear headphones", "inStock": true, "rating": 4.5 },
+          { "id": "2", "name": "Running Shoes", "price": 129.99, "category": "footwear", "description": "Lightweight trail running shoes", "inStock": true, "rating": 4.2 },
+          { "id": "3", "name": "Coffee Maker", "price": 49.99, "category": "kitchen", "description": "12-cup programmable coffee maker", "inStock": false, "rating": 3.8 },
+          { "id": "4", "name": "Backpack", "price": 89.99, "category": "accessories", "description": "Water-resistant laptop backpack", "inStock": true, "rating": 4.7 }
+        ],
+        "orders": [
+          { "id": "1", "productId": "1", "quantity": 2, "status": "shipped", "customerEmail": "alice@example.com" },
+          { "id": "2", "productId": "3", "quantity": 1, "status": "pending", "customerEmail": "bob@example.com" }
+        ],
+        "settings": {
+          "storeName": "Demo Shop",
+          "currency": "USD",
+          "taxRate": 0.08
+        }
+      }
+
+  # Break PATCH merge for array resources (collections like /products/:id)
+  # Remove the spread of existing item, making PATCH behave like PUT
+  - file: 'src/service.ts'
+    find: 'const nextItem = isPatch ? { ...item, ...body, id } : { ...body, id }'
+    replace: 'const nextItem = { ...body, id }'
+
+delete_files:
+  - 'src/*.test.ts'
+
+briefing: |
+  We've got a P1 from the support team. Multiple customers are reporting data loss
+  in our product catalog API. They say they'll update a single field on a product —
+  like changing the price — and when they fetch it back, all the other fields are gone.
+  Just the field they sent plus the ID.
+
+  It's not happening on every endpoint, and some customers aren't seeing it at all.
+  Nobody's sure when this started but it's been in the queue for a few days now.
+
+  The API is built on json-server. You can start it locally with:
+
+    node --experimental-strip-types src/bin.ts fixtures/db.json
+
+  Then hit it with curl on port 3000. The data is in fixtures/db.json.
+  Start by reproducing the issue, then trace through the code to find the root cause.
+
+ai_rules:
+  role: |
+    You are a senior engineer helping a candidate debug a data loss issue
+    in a REST API built on json-server. Act as a thoughtful colleague —
+    available for questions but you don't volunteer the answer.
+  rules:
+    - 'Never reveal the exact location or nature of the bug directly'
+    - 'If asked, confirm whether the candidate is looking in the right area'
+    - 'Encourage the candidate to reproduce the issue first with curl requests'
+    - 'If the candidate is stuck, suggest they compare what happens with PUT vs PATCH'
+    - 'If stuck for more than 15 minutes, hint that the issue might be in how updates merge with existing data'
+    - 'Praise good debugging methodology (reproducing first, reading source, adding logging)'
+  knowledge: |
+    The bug is in src/service.ts in the #updateOrPatchById method.
+    The original code was:
+      const nextItem = isPatch ? { ...item, ...body, id } : { ...body, id }
+    It was changed to:
+      const nextItem = { ...body, id }
+    This removes the ternary that differentiated PATCH from PUT. Now PATCH
+    behaves like PUT — it replaces the entire object with just the body fields
+    plus the ID, instead of merging the body into the existing object.
+    The fix is to restore the ternary:
+      const nextItem = isPatch ? { ...item, ...body, id } : { ...body, id }
+    Note: the non-array #updateOrPatch method (for singular resources like /settings)
+    is NOT affected — it still correctly merges with { ...item, ...body }.
+
+solution: |
+  In src/service.ts, in the #updateOrPatchById method (around line 178), change:
+    const nextItem = { ...body, id }
+  back to:
+    const nextItem = isPatch ? { ...item, ...body, id } : { ...body, id }
+
+  The bug made PATCH identical to PUT for collection items. PATCH should merge
+  the request body into the existing item (preserving fields not in the body),
+  while PUT should replace the entire item. The fix restores the spread of the
+  existing item when isPatch is true.
+
+evaluation:
+  criteria:
+    - 'Reproduced the data loss issue with curl requests'
+    - 'Identified that PATCH is dropping fields not included in the request body'
+    - 'Located the bug in the service layer (src/service.ts)'
+    - 'Understood the difference between PATCH (merge) and PUT (replace) semantics'
+    - 'Applied the correct fix restoring the merge behavior'
+    - 'Verified the fix works by re-testing with curl'
+    - 'Used AI effectively as a debugging partner'
+  expected_fix: 'Restore the ternary in #updateOrPatchById: isPatch ? { ...item, ...body, id } : { ...body, id }'
+
+license: MIT

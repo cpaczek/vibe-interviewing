@@ -63,7 +63,7 @@ export function validateScenario(config: ScenarioConfig): ValidationResult {
   if (config.type === 'feature') {
     const hasCriteria =
       (config.acceptance_criteria && config.acceptance_criteria.length > 0) ||
-      (config.evaluation && config.evaluation.criteria.length > 0)
+      (config.evaluation && config.evaluation.criteria && config.evaluation.criteria.length > 0)
     if (!hasCriteria) {
       warnings.push(
         'feature scenario has no acceptance_criteria or evaluation.criteria — candidates need a definition of done',

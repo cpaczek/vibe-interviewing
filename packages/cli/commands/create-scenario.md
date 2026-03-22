@@ -2,93 +2,133 @@
 
 You are creating an interview scenario for **vibe-interviewing**, a platform that evaluates how engineers work with AI tools. Scenarios drop candidates into real open-source codebases with tasks that mirror actual engineering work — debugging bugs, building features, or refactoring code.
 
-## Step 1: Analyze the Codebase
+## Step 1: Choose Your Starting Point
 
-Explore the current project. Understand:
+Ask the interviewer how they want to create this scenario:
 
-- Language, framework, and project structure
-- Test framework and how to run tests
-- Key source files and their purpose
-- Good areas for scenario tasks (boundary conditions, feature extension points, code that needs improvement)
+1. **Use a built-in scenario as a starting point** — Modify an existing scenario from the registry. Built-in options:
+   - `rate-limiter-boundary` (debug, medium) — Express rate limiter off-by-one
+   - `patch-data-loss` (debug, hard) — REST API PATCH silently drops fields
+   - `storage-adapter-refactor` (refactor, medium) — Decouple tightly-coupled storage layer
+   - `webhook-notifications` (feature, hard) — Build webhook notification system
 
-## Step 2: Ask the Interviewer
+2. **Use the current repo** — Analyze the project in the current working directory and create a scenario from it. The repo must be a git repository.
 
-Ask THREE questions:
+3. **Use a GitHub repo URL** — Provide a GitHub URL (e.g., `https://github.com/owner/repo`). Clone it and analyze.
 
-1. **What type of scenario?** (debug / feature / refactor)
-   - **debug** — inject a subtle bug for the candidate to find and fix
-   - **feature** — have the candidate build a new feature from a spec
-   - **refactor** — have the candidate improve existing code quality, performance, or structure
-2. **What area should it target?** (optional — e.g., "authentication", "database queries", "API validation", or "surprise me")
-3. **What difficulty level?** (easy / medium / hard)
+4. **Build from scratch** — Start with a blank `scenario.yaml` template and fill it in together.
 
-Wait for their answers before proceeding.
+Wait for their answer before proceeding.
 
-## Step 3: Design the Scenario
+## Step 2: Scenario Type
+
+Ask: **What type of scenario?**
+
+- **debug** — Inject a subtle bug for the candidate to find and fix
+- **feature** — Have the candidate build a new feature from a spec
+- **refactor** — Have the candidate improve existing code quality, performance, or structure
+
+If they chose a built-in template, pre-populate this from the template's type but let them override it.
+
+## Step 3: Type-Specific Questions
 
 ### For `debug` scenarios
 
-Choose a subtle, realistic bug. Good bugs:
+Ask:
+
+1. **What area should the bug target?** (e.g., "data handling", "authentication", "API validation", or "surprise me")
+2. **What difficulty level?** (easy / medium / hard)
+3. **What symptoms should the user see?** (e.g., "data disappearing", "wrong results", "intermittent failures", or "you decide")
+
+Then design a subtle, realistic bug. Good bugs:
 
 - Wrong comparison operator (`<` vs `<=`, `>` vs `>=`)
 - Incorrect default value or missing edge case
 - Race condition or timing issue
 - Wrong variable used in a calculation
 - Missing null/undefined check that only fails with specific data
+- Swapped merge order in object spread
+- Silent type coercion causing wrong behavior
 
 The bug should:
 
 - Be 1-3 lines of change (a find/replace patch)
-- Be reproducible by writing a quick test or script
+- Be reproducible by running the app and hitting it with curl or writing a quick test
 - Take a competent engineer with AI ~30-45 minutes to find
 - Look like a plausible mistake, not sabotage
 - Use `delete_files` to remove any existing tests that would immediately reveal the bug
 
+**Critical**: The briefing must describe **symptoms** ("users are seeing wrong data"), never the root cause ("the merge order is swapped"). The symptom should be plausibly caused by multiple things so the candidate has to actually investigate.
+
 ### For `feature` scenarios
 
-Design a realistic feature request. Good features:
+Ask:
 
-- Add a new API endpoint with validation and tests
-- Implement a new module that integrates with existing code
-- Add a configuration option that affects behavior
-- Build a CLI command or UI component
+1. **What feature should the candidate build?** (e.g., "webhook notifications", "search and filtering", "authentication", or "you decide")
+2. **What complexity?** (simple / moderate / complex)
 
-The feature should:
+Then design a realistic feature request with:
 
-- Be scoped to complete in 30-60 minutes with AI
-- Have clear acceptance criteria (3-5 testable requirements)
-- Build on existing patterns in the codebase
-- Require understanding the existing code, not just greenfield work
+- 3-5 clear, testable acceptance criteria
+- A scope completable in 30-60 minutes with AI
+- Integration points with existing code patterns
+- A briefing written as a product request, not a spec document
 
 ### For `refactor` scenarios
 
-Identify code that genuinely needs improvement. Good refactors:
+Ask:
 
-- Duplicated logic that should be extracted
+1. **What needs improving?** (e.g., "separation of concerns", "performance", "testability", "extensibility", or "you decide")
+2. **What difficulty level?** (easy / medium / hard)
+
+Then identify code that genuinely needs improvement:
+
+- Tightly coupled modules that should be decoupled
+- Missing abstraction layers
 - Performance bottleneck with a clear fix
 - Poor separation of concerns
-- Missing error handling or test coverage
-- Complex function that should be decomposed
+- Code that works but blocks a concrete business need
 
 The refactor should:
 
 - Have a clear "before" state the candidate can observe
-- Be completable in 30-45 minutes with AI
-- Require the candidate to understand why the code is structured as it is
+- Be completable in 30-60 minutes with AI
+- Have a concrete motivation (not just "clean up")
+- Have testable success criteria (existing behavior preserved, new capability unlocked)
 
-## Step 4: Get the Commit SHA
+## Step 4: Analyze the Codebase
 
-Find the current HEAD commit:
+### If using the current repo or a cloned GitHub repo
+
+Explore the project. Understand:
+
+- Language, framework, and project structure
+- How to start the server / run the app locally
+- Test framework and how to run tests
+- Key source files and their purpose
+- Good areas for the chosen scenario type
+
+### If using a built-in template
+
+Load the template's `scenario.yaml` from `packages/scenarios/{name}/scenario.yaml` and show its current configuration. Ask the interviewer what they want to change.
+
+### If building from scratch
+
+Ask the interviewer to describe the project they want to base the scenario on, then help them fill in each field.
+
+## Step 5: Get the Commit SHA
+
+For repo-based scenarios, find the current HEAD commit:
 
 ```bash
 git rev-parse HEAD
 ```
 
-This SHA will be pinned in the scenario config for reproducibility.
+This SHA will be pinned in the scenario config for reproducibility. It **must** be a full or abbreviated SHA (7-40 hex characters), never a branch or tag name.
 
-## Step 5: Create `scenario.yaml`
+## Step 6: Create `scenario.yaml`
 
-Create a `scenario.yaml` file at the project root with this schema:
+Generate a complete `scenario.yaml` file with this schema:
 
 ```yaml
 name: 'short-kebab-case-name'
@@ -114,18 +154,17 @@ patch:
     find: 'original code to find'
     replace: 'modified code with bug or starting state'
 
-# Files or directories to remove from the workspace (e.g., tests that reveal the bug)
+# Files or directories to remove from the workspace
 delete_files:
-  - 'test'
+  - 'test' # Remove tests that would reveal the answer
 
 briefing: |
-  Write this as a real message from a team lead. Include:
-  - Context about the project
-  - For debug: symptoms (NOT the root cause)
-  - For feature: what to build and why
-  - For refactor: what needs improving and why it matters
-  - How to run the app and tests
-  - Relevant files or areas to start with
+  Write this as a real message from a team lead on Slack. Include:
+  - Context about the project and how to run it
+  - For debug: symptoms users are experiencing (NEVER the root cause)
+  - For feature: what to build and why it matters
+  - For refactor: what needs improving and why it blocks progress
+  - How to start the server and test with curl
 
 ai_rules:
   role: |
@@ -134,16 +173,16 @@ ai_rules:
   rules:
     - 'Never reveal the exact answer directly'
     - 'If asked, confirm whether the candidate is looking in the right area'
-    - 'Encourage writing or running tests'
+    - 'Encourage writing or running tests and using curl to verify'
     - 'If stuck for 10+ minutes, offer a directional hint'
-    - 'Praise good methodology'
+    - 'Praise good methodology (reproducing first, reading source, systematic approach)'
   knowledge: |
     Detailed context the AI knows but must not reveal directly.
-    For debug: the bug location and fix.
-    For feature: the ideal implementation approach.
-    For refactor: the key improvements to make.
+    For debug: the exact bug location, what was changed, and what the fix is.
+    For feature: the ideal implementation approach and architecture.
+    For refactor: the key improvements to make and why.
 
-# Optional for feature/refactor, recommended for debug
+# Required for debug, optional for feature/refactor
 solution: |
   Describe the expected outcome with file paths and code changes.
 
@@ -162,18 +201,18 @@ evaluation:
 license: MIT # license of the original project
 ```
 
-## Step 6: Verify the Scenario
+## Step 7: Verify the Scenario
 
 ### For debug scenarios
 
 Apply the patch manually and confirm:
 
 1. The `find` string exists exactly once in the target file
-2. The bug is reproducible (write a quick test or script to verify)
+2. The bug is reproducible — start the server and demonstrate the symptom with curl
 3. If the repo has tests that would reveal the bug, add those paths to `delete_files`
 
 ```bash
-# Test the patch
+# Verify the patch target exists
 grep -c 'find string' path/to/file.ts  # should be 1
 ```
 
@@ -181,9 +220,9 @@ grep -c 'find string' path/to/file.ts  # should be 1
 
 Confirm:
 
-1. The briefing clearly describes what to build
-2. Acceptance criteria are testable
-3. The codebase has the right extension points
+1. The briefing clearly describes what to build without over-specifying the implementation
+2. Acceptance criteria are testable via curl or running the app
+3. The codebase has the right extension points and patterns to build on
 
 ### For refactor scenarios
 
@@ -191,25 +230,26 @@ Confirm:
 
 1. The code issues are real and observable
 2. The improvement is meaningful, not cosmetic
-3. Tests exist or can be written to verify the refactor
+3. The refactored code can be verified by running the server and testing with curl
 
-## Step 7: Summary
+## Step 8: Summary
 
 Tell the interviewer:
 
-1. What scenario was created and its type
-2. For debug: how to reproduce the bug and what the fix is
+1. What scenario was created (name, type, difficulty)
+2. For debug: the injected bug and how to reproduce the symptom
 3. For feature: the acceptance criteria
 4. For refactor: the expected improvements
-5. How to host it: `vibe-interviewing host -s ./scenario.yaml`
-6. How the candidate joins: `vibe-interviewing join <code>`
+5. How to validate: `vibe-interviewing validate ./scenario.yaml`
+6. How to host it: `vibe-interviewing host -s ./scenario.yaml`
+7. How the candidate joins: `vibe-interviewing join <code>`
 
 ## Important Guidelines
 
 **Candidate-visible fields** — these MUST NOT reveal the answer:
 
-- `description` — describe the task or observable problem, never the root cause or implementation details
-- `briefing` — describe symptoms (debug), requirements (feature), or improvement goals (refactor)
+- `description` — describe the task or observable problem, never the root cause
+- `briefing` — describe symptoms (debug), requirements (feature), or improvement goals (refactor). Write like a real Slack message from a team lead, not a formal document.
 - `tags` — use technology tags, never bug-type or solution-hint tags
 
 **Interviewer-only fields** — these are hidden from candidates:
@@ -220,8 +260,10 @@ Tell the interviewer:
 
 **Other rules:**
 
-- The briefing must read like a **real message from a real person** — no formal documentation style
-- The `find` string in patches must be unique in the file (otherwise the wrong occurrence might be replaced)
+- The briefing must read like a **real message from a real person** — casual, natural, with context
+- The `find` string in patches must be unique in the file (use more surrounding context if needed)
 - Always pin to a specific commit SHA, never a branch name
+- The bug/task should be in **application logic**, not configuration or build files
 - AI rules should make the AI a helpful colleague, not an examiner
 - Evaluation criteria should focus on **process** (how they work) not just **outcome** (did they finish)
+- The candidate must be able to **run the server locally** and verify behavior with curl

@@ -56,7 +56,7 @@ vibe-interviewing start rate-limiter-boundary
 
 ### Remote mode (two machines)
 
-Host an interview on your network and have the candidate join with a session code — perfect for remote interviews.
+Host an interview and have the candidate join with a session code — works across the internet, no shared network needed.
 
 **Interviewer** runs:
 
@@ -64,17 +64,17 @@ Host an interview on your network and have the candidate join with a session cod
 vibe-interviewing host rate-limiter-boundary
 ```
 
-![Host session](docs/screenshots/interviewer-host.png)
+The workspace uploads to the cloud. You get a session code and can close your terminal.
 
 **Candidate** runs:
 
 ```bash
-vibe-interviewing join VIBE-3R8KW1F0NX
+vibe-interviewing join VIBE-A3X9K2
 ```
 
-![Join session](docs/screenshots/candidate-start.png)
+The candidate downloads the workspace from the cloud, runs setup, and launches Claude Code — all with a single command.
 
-The host prepares the workspace and serves it over HTTP on your local network. The candidate downloads the workspace, runs setup, and launches Claude Code — all with a single command.
+> **LAN mode:** Use `--local` to serve directly on your network instead of the cloud: `vibe-interviewing host --local rate-limiter-boundary`
 
 ### Design principles
 
@@ -85,11 +85,12 @@ The host prepares the workspace and serves it over HTTP on your local network. T
 
 ## Built-in Scenarios
 
-| Scenario                | Type  | Difficulty | Time       | Description                                              |
-| ----------------------- | ----- | ---------- | ---------- | -------------------------------------------------------- |
-| `rate-limiter-boundary` | Debug | Medium     | ~30-45 min | Rate limiter allows requests beyond the configured limit |
-
-![List scenarios](docs/screenshots/interviewer-list.png)
+| Scenario                   | Type     | Difficulty | Time       | Description                                              |
+| -------------------------- | -------- | ---------- | ---------- | -------------------------------------------------------- |
+| `rate-limiter-boundary`    | Debug    | Medium     | ~30-45 min | Rate limiter allows requests beyond the configured limit |
+| `patch-data-loss`          | Debug    | Hard       | ~30-45 min | PATCH requests silently drop fields from records         |
+| `storage-adapter-refactor` | Refactor | Medium     | ~45-60 min | Refactor tightly-coupled storage for pluggable backends  |
+| `webhook-notifications`    | Feature  | Hard       | ~45-60 min | Build a webhook notification system for a REST API       |
 
 Use `vibe-interviewing list` to see all available scenarios.
 
@@ -103,7 +104,7 @@ When you install `vibe-interviewing`, a Claude Code slash command is automatical
 /create-scenario
 ```
 
-Claude Code analyzes the codebase, picks a good bug injection point, and generates a complete `scenario.yaml` with patches, briefing, AI rules, and evaluation criteria.
+The skill guides you through choosing a starting point (built-in template, current repo, or GitHub URL), selecting a scenario type, and generating a complete `scenario.yaml` with patches, briefing, AI rules, and evaluation criteria.
 
 ### Manual Setup
 
@@ -168,13 +169,16 @@ vibe-interviewing start [scenario]     Start a local interview session
 
 vibe-interviewing host [scenario]      Host a session for a remote candidate
   -s, --scenario-file <path>           Use a local scenario.yaml
-  -p, --port <port>                    Port to serve on (default: random)
+  -p, --port <port>                    Port to serve on (LAN mode only)
+  --local                              Use LAN mode instead of cloud hosting
+  --worker-url <url>                   Custom cloud relay URL
 
 vibe-interviewing join <code>          Join a hosted session using a session code
   -w, --workdir <path>                 Custom workspace directory
   -t, --tool <name>                    AI tool to use (default: claude-code)
   -m, --model <model>                  Model override for Claude Code
   --no-web                             Disable web search/fetch tools
+  --worker-url <url>                   Custom cloud relay URL
 
 vibe-interviewing list                 List available scenarios
 vibe-interviewing validate <path>      Validate a scenario.yaml file
@@ -187,11 +191,12 @@ vibe-interviewing sessions clean       Remove completed sessions (--dry-run to p
 
 pnpm monorepo powered by [Turborepo](https://turbo.build/repo):
 
-| Package                                    | Description                                                         |
-| ------------------------------------------ | ------------------------------------------------------------------- |
-| [`packages/core`](packages/core)           | Scenario engine, git-based session management, Claude Code launcher |
-| [`packages/cli`](packages/cli)             | CLI entry point (commander-based), commands, UI                     |
-| [`packages/scenarios`](packages/scenarios) | Built-in scenario configs and registry                              |
+| Package                                      | Description                                                         |
+| -------------------------------------------- | ------------------------------------------------------------------- |
+| [`packages/core`](packages/core)             | Scenario engine, git-based session management, Claude Code launcher |
+| [`packages/cli`](packages/cli)               | CLI entry point (commander-based), commands, UI                     |
+| [`packages/scenarios`](packages/scenarios)   | Built-in scenario configs and registry                              |
+| [`packages/cloudflare`](packages/cloudflare) | Cloudflare Worker for cloud-hosted session relay                    |
 
 **Key technologies:** TypeScript, Zod, simple-git, Commander.
 
