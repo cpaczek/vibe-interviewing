@@ -133,7 +133,7 @@ async function handleCreateSession(request: Request, env: Env): Promise<Response
   if (!systemPrompt || typeof systemPrompt !== 'string') {
     return errorResponse('Missing "systemPrompt" field (text)', 400)
   }
-  if (!workspace || !(workspace instanceof File)) {
+  if (!workspace || typeof workspace === 'string') {
     return errorResponse('Missing "workspace" field (tarball file)', 400)
   }
 
